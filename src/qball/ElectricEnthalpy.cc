@@ -79,7 +79,7 @@ double ElectricEnthalpy::vsst(double x) const
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-ElectricEnthalpy::ElectricEnthalpy(const Sample& s): s_(s), wf_(s.wf),
+ElectricEnthalpy::ElectricEnthalpy(const Sample& s): s_(s), wf_(s.wf), // no const in qbox CS
   sd_(*(s.wf.sd(0,0))), ctxt_(s.wf.sd(0,0)->context()),
   basis_(s.wf.sd(0,0)->basis())
 {
@@ -120,10 +120,10 @@ ElectricEnthalpy::ElectricEnthalpy(const Sample& s): s_(s), wf_(s.wf),
   assert(wf_.nkp()==1);
   assert(wf_.nspin()==1);
 
-  dwf_ = new Wavefunction(s.wf);
-  
+  dwf_ = new Wavefunction(s.wf); 
   tdmlwft_ = new TDMLWFTransform(sd_);
   mlwft_ = new MLWFTransform(sd_);
+
   //mlwft_->set_tol(1.e-10);
 
   smat_[0] = smat_[1] = smat_[2] = 0;
@@ -156,7 +156,7 @@ ElectricEnthalpy::ElectricEnthalpy(const Sample& s): s_(s), wf_(s.wf),
 
   mlwfc_.resize(nst);
   mlwfs_.resize(nst);
-  //quad_.resize(nst);
+  //quad_.resize(nst);  //CS not commented out in qbox 
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -253,17 +253,17 @@ void ElectricEnthalpy::update(void)
 
     if ( pol_type_ == mlwf_ref || pol_type_ == mlwf_ref_q )
     {
-      //tmap["correction"].start();
-      //compute_correction();
-      //tmap["correction"].stop();
-      //DCY: not currently implemented in QB@LL
+      tmap["correction"].start();
+      compute_correction();
+      tmap["correction"].stop();
+      //CS: currently under construction 
     }
 
     for ( int i = 0; i < sd_.nst(); i++ )
     {
       dipole_el_ -= 2.0 * mlwfc_[i];
-      //if ( pol_type_ == mlwf_ref || pol_type_ == mlwf_ref_q )
-      //  dipole_el_ -= 2.0 * correction_[i];
+      if ( pol_type_ == mlwf_ref || pol_type_ == mlwf_ref_q ) //CS
+        dipole_el_ -= 2.0 * correction_[i]; //CS
     }
 
     // compute gradient
@@ -359,8 +359,7 @@ void ElectricEnthalpy::update(void)
 		   ptr1[ii] += (fac1 * ptrsin[ii]);
 		  }
                }
-          }
-	  /*
+          } 
           else if ( pol_type_ == mlwf_ref || pol_type_ == mlwf_ref_q )
           {
             // MLWF_REF part: real-space correction
@@ -372,102 +371,10 @@ void ElectricEnthalpy::update(void)
             int ione = 1;
             daxpy (&size, &alpha, cc.valptr(), &ione, cp.valptr(), &ione);
           } // if pol_type_
-	  */
         } // if e_field_[idir]
       } // for idir
     } // if finite_field_
   }
-  /*
-  // Berry phase approach not currently implemented in qb@ll, but MLWF approach is equivalent.
-  else if ( pol_type_ == berry )
-  {
-    // proxy matrix
-    DoubleMatrix gradp(dwf_->sd(0,0)->c());
-    if ( finite_field_ )
-      dwf_->clear();
-
-    for ( int idir = 0; idir < 3; idir++ )
-    {
-      const double fac = length(cell.a(idir))/( 2.0*M_PI );
-      complex<double>* val = smat_[idir]->valptr();
-
-      const double* re = mlwft_->a(idir*2)->cvalptr();
-      const double* im = mlwft_->a(idir*2+1)->cvalptr();
-      for ( int i = 0; i < smat_[idir]->size(); i++ )
-        val[i] = complex<double>(re[i],im[i]);
-
-      // compute determinant of S
-      ComplexMatrix& sm = *smat_[idir];
-      const Context& ctxt = sm.context();
-
-      // perform LU decomposition of S
-      valarray<int> ipiv;
-      sm.lu(ipiv);
-
-      int n = sm.n();
-      int nb = sm.nb();
-      // note: m == n, mb == nb
-
-      // compute determinant from diagonal values of U  (stored in diag of S)
-      // get full diagonal of the matrix in array diag
-      valarray<complex<double> > diag(n);
-      for ( int ii = 0; ii < n; ii++ )
-      {
-        int iii = sm.l(ii) * nb + sm.x(ii);
-        int jjj = sm.m(ii) * nb + sm.y(ii);
-        if ( sm.pr(ii) == ctxt.myrow() &&
-             sm.pc(ii) == ctxt.mycol() )
-          diag[ii] = val[iii+sm.mloc()*jjj];
-      }
-      ctxt.dsum(2*n,1,(double*)&diag[0],2*n);
-
-      // sum the argument of diagonal elements
-      double sumarg = 0.0;
-      for ( int ii = 0; ii < n; ii++ )
-        sumarg += arg(diag[ii]);
-
-      // compute determinant
-      complex<double> det = 1.0;
-      for ( int ii = 0; ii < n; ii++ )
-        det *= diag[ii];
-
-      const int sign = sm.signature(ipiv);
-      if ( sign == -1 )
-        sumarg += M_PI;
-
-      // assume occupation number of 2.0
-      dipole_el_[idir] = - 2.0 * fac * sumarg;
-
-      if ( finite_field_ )
-      {
-        // compute inverse of smat
-        sm.inverse_from_lu(ipiv);
-
-        // real and img part of S^{-1}
-        DoubleMatrix s_real(ctxt_,n,n,nb,nb);
-        DoubleMatrix s_img(ctxt_,n,n,nb,nb);
-        DoubleMatrix sp(sm);
-
-        int size = s_real.size();
-        int ione = 1, itwo = 2;
-
-        // copy real and imaginary parts of s to s_real and s_img
-        dcopy(&size,sp.valptr(),&itwo,s_real.valptr(),&ione);
-        dcopy(&size,sp.valptr()+1,&itwo,s_img.valptr(),&ione);
-
-        // proxy Matrix for cosx|psi> and sinx|psi>
-        DoubleMatrix cosp(sdcos[idir]->c());
-        DoubleMatrix sinp(sdsin[idir]->c());
-
-        // alpha = E_i * L_i / 2pi
-        double alpha = fac * e_field_[idir];
-
-        gradp.gemm('n','n',alpha,cosp,s_img,1.0);
-        gradp.gemm('n','n',alpha,sinp,s_real,1.0);
-      }
-    } // for idir
-  }
-  */
   dipole_total_ = dipole_ion_ + dipole_el_;
   cell.fold_in_ws(dipole_ion_);
   cell.fold_in_ws(dipole_el_);
@@ -496,7 +403,7 @@ double ElectricEnthalpy::enthalpy(Wavefunction& dwf, bool compute_hpsi)
 // Phys. Rev. B 73, 075121 (2006)
 // Calculate correction in real space and derivatives of the correction
 ///////////////////////////////////////////////////////////////////////////////
-/*
+//CS
 void ElectricEnthalpy::compute_correction(void)
 {
   int np0v = basis_.np(0);
@@ -714,7 +621,7 @@ void ElectricEnthalpy::compute_correction(void)
     tmap["real"].stop();
   } // for iter
 }
-*/
+//CS
 
 ////////////////////////////////////////////////////////////////////////////////
 void ElectricEnthalpy::print(ostream& os) const
