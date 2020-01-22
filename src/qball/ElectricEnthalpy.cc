@@ -86,7 +86,7 @@ ElectricEnthalpy::ElectricEnthalpy(const Sample& s): s_(s), wf_(s.wf), // no con
   onpe0_ = ctxt_.onpe0();
   e_field_ = s.ctrl.e_field;
   finite_field_ = norm(e_field_) != 0.0;
-  compute_quadrupole_ = false;
+  //compute_quadrupole_ = false;
 
 
   if ( s.ctrl.polarization == "OFF" )
@@ -106,7 +106,7 @@ ElectricEnthalpy::ElectricEnthalpy(const Sample& s): s_(s), wf_(s.wf), // no con
   else if ( s.ctrl.polarization == "MLWF_REF_Q" )
   {
     pol_type_ = mlwf_ref;
-    compute_quadrupole_ = true;
+    //compute_quadrupole_ = true;
   }
   else
   {
@@ -436,7 +436,7 @@ void ElectricEnthalpy::compute_correction(void)
   // calculate refinements
   // ref is scaled by np012v
   vector<double> ref(nst*3);
-  if ( compute_quadrupole_ ) ref.resize(nst*9);
+  //if ( compute_quadrupole_ ) ref.resize(nst*9);
 
   // cell size;
   const UnitCell& cell = sd_.basis().cell();
@@ -485,9 +485,9 @@ void ElectricEnthalpy::compute_correction(void)
     {
       int n = c.jglobal(in);
       double* pref;
-      if ( compute_quadrupole_ )
-        pref = &ref[9*n];
-      else
+     // if ( compute_quadrupole_ )
+      //  pref = &ref[9*n];
+    //  else
         pref = &ref[3*n];
 
       // real space wavefunction in wftmp
@@ -555,15 +555,15 @@ void ElectricEnthalpy::compute_correction(void)
         ywftmp[i] = ywft;
         zwftmp[i] = zwft;
 
-        if ( compute_quadrupole_ )
-        {
-          pref[3] += xwft * xwft;
-          pref[4] += ywft * ywft;
-          pref[5] += zwft * zwft;
-          pref[6] += xwft * ywft;
-          pref[7] += ywft * zwft;
-          pref[8] += zwft * xwft;
-        }
+       // if ( compute_quadrupole_ )
+       // {
+       //   pref[3] += xwft * xwft;
+       //   pref[4] += ywft * ywft;
+       //   pref[5] += zwft * zwft;
+       //   pref[6] += xwft * ywft;
+       //   pref[7] += ywft * zwft;
+       //   pref[8] += zwft * xwft;
+      //  }
       } // for i
       tmap["real"].stop();
 
@@ -583,14 +583,14 @@ void ElectricEnthalpy::compute_correction(void)
 
     ctxt_.barrier();
     tmap["dsum"].start();
-    if ( compute_quadrupole_ )
-      ctxt_.dsum(9*nst,1,&ref[0],9*nst);
-    else
+   // if ( compute_quadrupole_ )
+   //   ctxt_.dsum(9*nst,1,&ref[0],9*nst);
+  //  else
       ctxt_.dsum(3*nst,1,&ref[0],3*nst);
     tmap["dsum"].stop();
 
     tmap["real"].start();
-    if ( compute_quadrupole_ )
+  /*  if ( compute_quadrupole_ )
     {
       for ( int ist = 0; ist < nst; ist++ )
       {
@@ -607,8 +607,8 @@ void ElectricEnthalpy::compute_correction(void)
         pquad.setoffdiag ( 1, ref[ist*9+7]/np012v - pcor[1] * pcor[2] );
         pquad.setoffdiag ( 2, ref[ist*9+8]/np012v - pcor[2] * pcor[0] );
       }
-    }
-    else
+    } */
+  //  else
     {
       for ( int ist = 0; ist < nst; ist++ )
       {
