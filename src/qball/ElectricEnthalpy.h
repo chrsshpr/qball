@@ -85,7 +85,7 @@ class ElectricEnthalpy
   std::vector <D3vector> mlwfc_;
   std::vector <double> mlwfs_;
   std::vector <D3vector> correction_;
-//  std::vector <D3tensor> quad_;
+  //std::vector <D3tensor> quad_;
 
   void compute_correction(void);
   double vsst(double x) const;
