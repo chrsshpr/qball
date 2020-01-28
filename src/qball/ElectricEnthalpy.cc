@@ -643,8 +643,8 @@ void ElectricEnthalpy::print(ostream& os) const
 {
   if ( pol_type_ == off ) return;
   os << fixed << right << setprecision(8);
-  // print MLWF centers if pol_type_ == MLWF or MLWF_REF or MLWF_REF_Q or TDMLWF //CCS
-  if ( pol_type_ == mlwf || pol_type_ == mlwf_ref || pol_type_ == mlwf_ref_q || pol_type_ == tdmlwf )
+  // print MLWF centers if pol_type_ == MLWF or MLWF_REF or MLWF_REF_Q or TDMLWF or TDMLWF_ref//CCS
+  if ( pol_type_ == mlwf || pol_type_ == mlwf_ref || pol_type_ == mlwf_ref_q || pol_type_ == tdmlwf || pol_type_ == tdmlwf_ref)
   {
     int nst = sd_.nst();
     os << " <mlwf_set size=\"" << nst << "\">" << endl;
@@ -655,17 +655,17 @@ void ElectricEnthalpy::print(ostream& os) const
          << setw(12) << mlwfc_[i].y << " "
          << setw(12) << mlwfc_[i].z << " \""
          << "       spread=\" " << mlwfs_[i] << " \"/>" << endl;
-      if ( pol_type_ == mlwf_ref )
+      if ( pol_type_ == mlwf_ref || pol_type_ == tdmlwf_ref)
       {
         os << " <mlwf_ref center=\"" << setprecision(8)
            << setw(12) << mlwfc_[i].x + correction_[i].x << " "
            << setw(12) << mlwfc_[i].y + correction_[i].y << " "
            << setw(12) << mlwfc_[i].z + correction_[i].z << " \"";
-        if ( compute_quadrupole_ )
-        {
+        //if ( compute_quadrupole_ )
+       // {
           // add spread attribute
           //os << " \n     spread=\" " << sqrt(quad_[i].trace()) << " \"";
-        }
+       // }
         os << "/>" << endl;
 	/*
         if ( compute_quadrupole_ )
