@@ -101,8 +101,14 @@ ElectricEnthalpy::ElectricEnthalpy(const Sample& s): s_(s), wf_(s.wf), // no con
     {
      pol_type_ = tdmlwf;
     }
+  else if ( s.ctrl.polarization == "TDMLWF" )
+    {
+     pol_type_ = tdmlwf;
+    }
   else if ( s.ctrl.polarization == "MLWF_REF" )
     pol_type_ = mlwf_ref;
+  else if ( s.ctrl.polarization == "TDMLWF_REF")
+    pol_type_ = tdmlwf_ref;
   else if ( s.ctrl.polarization == "MLWF_REF_Q" )
   {
     pol_type_ = mlwf_ref;
@@ -124,15 +130,13 @@ ElectricEnthalpy::ElectricEnthalpy(const Sample& s): s_(s), wf_(s.wf), // no con
   tdmlwft_ = new TDMLWFTransform(sd_);
   mlwft_ = new MLWFTransform(sd_);
 
-  //mlwft_->set_tol(1.e-10);
-
   smat_[0] = smat_[1] = smat_[2] = 0;
   rwf_[0] = rwf_[1] = rwf_[2] = 0;
   int nst = sd_.nst();
 
-  if ( pol_type_ == mlwf_ref || pol_type_ == mlwf_ref_q )
+  if ( pol_type_ == mlwf_ref || pol_type_ == mlwf_ref_q || pol_type_ == tdmlwf_ref )
   {
-    // allocate real space wf arrays for MLWF refinement
+    // allocate real space wf arrays for MLWF refinement  
     for ( int idir = 0; idir < 3; idir++ )
       rwf_[idir] = new Wavefunction(wf_);
     correction_.resize(nst);
@@ -156,7 +160,7 @@ ElectricEnthalpy::ElectricEnthalpy(const Sample& s): s_(s), wf_(s.wf), // no con
 
   mlwfc_.resize(nst);
   mlwfs_.resize(nst);
-  //quad_.resize(nst);  //CS not commented out in qbox 
+  //quad_.resize(nst);  // no quadrupole  
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -223,10 +227,10 @@ void ElectricEnthalpy::update(void)
   dipole_ion_ = s_.atoms.dipole();
   dipole_el_ = D3vector(0,0,0);
 
-  if ( pol_type_ == mlwf || pol_type_ == mlwf_ref || pol_type_ == mlwf_ref_q || pol_type_ == tdmlwf)
+  if ( pol_type_ == mlwf || pol_type_ == mlwf_ref || pol_type_ == mlwf_ref_q || pol_type_ == tdmlwf || pol_type_ == tdmlwf_ref)
   {
     tmap["mlwf_trans"].start();
-    if (pol_type_ == tdmlwf)
+    if (pol_type_ == tdmlwf || pol_type_ == tdmlwf_ref) 
     { 
       tdmlwft_->compute_transform();
       tdmlwft_->apply_transform(sd_);
@@ -239,7 +243,7 @@ void ElectricEnthalpy::update(void)
     tmap["mlwf_trans"].stop();
     for ( int i = 0; i < sd_.nst(); i++ )
     {
-      if (pol_type_ == tdmlwf)
+      if (pol_type_ == tdmlwf || pol_type_ == tdmlwf_ref)
       {
         mlwfc_[i] = tdmlwft_->center(i);
         mlwfs_[i] = tdmlwft_->spread(i);
@@ -251,7 +255,7 @@ void ElectricEnthalpy::update(void)
       }
     }
 
-    if ( pol_type_ == mlwf_ref || pol_type_ == mlwf_ref_q )
+    if ( pol_type_ == mlwf_ref || pol_type_ == mlwf_ref_q || pol_type_ == tdmlwf_ref)
     {
       tmap["correction"].start();
       compute_correction();
@@ -262,8 +266,8 @@ void ElectricEnthalpy::update(void)
     for ( int i = 0; i < sd_.nst(); i++ )
     {
       dipole_el_ -= 2.0 * mlwfc_[i];
-      if ( pol_type_ == mlwf_ref || pol_type_ == mlwf_ref_q ) //CS
-        dipole_el_ -= 2.0 * correction_[i]; //CS
+      if ( pol_type_ == mlwf_ref || pol_type_ == mlwf_ref_q || pol_type_ == tdmlwf_ref) 
+        dipole_el_ -= 2.0 * correction_[i]; //Use refined centers for dipole 
     }
 
     // compute gradient
@@ -315,7 +319,7 @@ void ElectricEnthalpy::update(void)
               }
 
 	    } 
-	    else if ( pol_type_ == tdmlwf )
+	    else if ( pol_type_ == tdmlwf)
 	    {
               const double nst = sd_.nst();
               std::vector< complex<double> > adiag_inv_real(nst,0),adiag_inv_imag(nst,0);
@@ -370,6 +374,17 @@ void ElectricEnthalpy::update(void)
             double alpha = e_field_[idir];
             int ione = 1;
             daxpy (&size, &alpha, cc.valptr(), &ione, cp.valptr(), &ione);
+          } 
+	  else if (pol_type_ == tdmlwf_ref) //CS
+	  { 
+	  // TDMLWF refinement for complex wavefxn
+	    ComplexMatrix cc(rwf_[idir]->sd(0,0)->c());
+            ComplexMatrix cp(dwf_->sd(0,0)->c());
+
+            int size = cc.size();
+            complex<double> alpha = e_field_[idir];
+            int ione = 1;
+            zaxpy (&size, &alpha, cc.valptr(), &ione, cp.valptr(), &ione);
           } // if pol_type_
         } // if e_field_[idir]
       } // for idir

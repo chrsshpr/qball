@@ -61,7 +61,7 @@ class ElectricEnthalpy
   bool onpe0_;
   bool finite_field_;
 
-  enum { off, berry, mlwf, tdmlwf, mlwf_ref, mlwf_ref_q } pol_type_;
+  enum { off, berry, mlwf, tdmlwf, tdmlwf_ref, mlwf_ref, mlwf_ref_q } pol_type_;
   bool compute_quadrupole_;
 
   // electric field
