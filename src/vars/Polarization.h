@@ -55,13 +55,13 @@ class Polarization: public Var
     string v = argv[1];
 
     if ( v == "OFF" || v == "MLWF" || v == "MLWF_REF" || v == "MLWF_REF_Q" ||
-         v == "BERRY" || v == "TDMLWF" )
+         v == "BERRY" || v == "TDMLWF" || v == "TDMLWF_REF")
       s->ctrl.polarization = v;
     else
     {
       //if ( ui->onpe0() )
       cout <<
-      " polarization must be OFF, MLWF, TDMLWF, MLWF_REF, MLWF_REF_Q or BERRY" << endl;
+      " polarization must be OFF, MLWF, TDMLWF, MLWF_REF, TDMLWF_REF, MLWF_REF_Q or BERRY" << endl;
       return 1;
     }
     return 0;
