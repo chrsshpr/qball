@@ -115,9 +115,9 @@ void EhrenSampleStepper::step(int niter)
   int occtest = (2 * s_.wf.nst()) - s_.wf.nspin() * s_.wf.nel();
   const bool fractional_occ = (occtest != 0 && occtest != 1);
   const bool compute_eigvec = fractional_occ || s_.ctrl.wf_diag == "T";
-  //const bool compute_mlwf = s_.ctrl.wf_diag == "MLWF"; Standard MLWF algorithm doesn't work for Ehrenfest/RT-TDDFT. 
+  const bool compute_mlwf = s_.ctrl.wf_diag == "TDMLWF"; //Standard MLWF algorithm doesn't work for Ehrenfest/RT-TDDFT, only works for complex wavefunctions 
   //const bool compute_mlwfc = s_.ctrl.wf_diag == "MLWFC";
-  const bool compute_tdmlwf = s_.ctrl.wf_diag == "TDMLWF";
+  //const bool compute_tdmlwf = s_.ctrl.wf_diag == "TDMLWF";
   enum ortho_type { GRAM, LOWDIN, ORTHO_ALIGN, RICCATI };
 
   if (fractional_occ && oncoutpe)
@@ -151,7 +151,7 @@ void EhrenSampleStepper::step(int niter)
   cd_.set_nlcc(nlcc);
   
   //ewd check that MLWF not being used with ultrasoft (not yet implemented)
-  if (ultrasoft && (compute_tdmlwf )) {
+  if (ultrasoft && (compute_mlwf )) {
     if ( oncoutpe ) 
       cout << "<ERROR> EhrenSampleStepper:  Maximally-localized Wannier Functions not yet implemented with ultrasoft. </ERROR>" << endl;
     return;
@@ -233,7 +233,7 @@ void EhrenSampleStepper::step(int niter)
 
   TDMLWFTransform* tdmlwft=0;
 
-  if ( compute_tdmlwf )
+  if ( compute_mlwf )
   {
     // MLWF can be computed at the gamma point only
     // There must be a single k-point, and it must be gamma
@@ -690,6 +690,10 @@ void EhrenSampleStepper::step(int niter)
 	  tmap["gemm"].start();
           ortho.gemm('c','n',1.0,(*s_.proj_wf).sd(ispin,ikp)->c(),(wf).sd(ispin,ikp)->c(),0.0);
 	  tmap["gemm"].stop();
+	  ComplexMatrix test(wf.sd(ispin,ikp)->context(),(wf.sd(ispin,ikp)->c()).n(),(wf.sd(ispin,ikp)->c()).n(),(wf.sd(ispin,ikp)->c()).nb(),(wf.sd(ispin,ikp)->c()).nb());
+          test.gemm('c','n',1.0,(wf).sd(ispin,ikp)->c(),(wf).sd(ispin,ikp)->c(),0.0);
+          test.print(cout);
+          test.clear();
 
           DoubleMatrix ortho_proxy(ortho);
 
@@ -1213,13 +1217,13 @@ void EhrenSampleStepper::step(int niter)
        (*s_.previous_wf) = s_.wf;
     }
 
-    if ( compute_tdmlwf )
+    if ( compute_mlwf )
     {
        SlaterDet& sd = *(wf.sd(0,0));
        tdmlwft->update();
        tdmlwft->compute_transform();
 
-       if ( compute_tdmlwf )
+       if ( compute_mlwf )
           tdmlwft->apply_transform(sd);
           
           if ( oncoutpe )
