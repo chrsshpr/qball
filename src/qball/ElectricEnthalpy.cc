@@ -48,7 +48,6 @@
 #include "FourierTransform.h"
 #include "UnitCell.h"
 using namespace std;
-
 ///////////////////////////////////////////////////////////////////////////////
 double ElectricEnthalpy::vsst(double x) const
 {
@@ -77,16 +76,14 @@ double ElectricEnthalpy::vsst(double x) const
   }
   return v;
 }
-
 ///////////////////////////////////////////////////////////////////////////////
-ElectricEnthalpy::ElectricEnthalpy(const Sample& s): s_(s), wf_(s.wf), // no const in qbox CS
+ElectricEnthalpy::ElectricEnthalpy(const Sample& s): s_(s), wf_(s.wf), 
   sd_(*(s.wf.sd(0,0))), ctxt_(s.wf.sd(0,0)->context()),
   basis_(s.wf.sd(0,0)->basis())
 {
   onpe0_ = ctxt_.onpe0();
   e_field_ = s.ctrl.e_field;
   finite_field_ = norm(e_field_) != 0.0;
-  //compute_quadrupole_ = false;
 
 
   if ( s.ctrl.polarization == "OFF" )
@@ -101,10 +98,6 @@ ElectricEnthalpy::ElectricEnthalpy(const Sample& s): s_(s), wf_(s.wf), // no con
     {
      pol_type_ = tdmlwf;
     }
-  else if ( s.ctrl.polarization == "TDMLWF" )
-    {
-     pol_type_ = tdmlwf;
-    }
   else if ( s.ctrl.polarization == "MLWF_REF" )
     pol_type_ = mlwf_ref;
   else if ( s.ctrl.polarization == "TDMLWF_REF")
@@ -112,7 +105,6 @@ ElectricEnthalpy::ElectricEnthalpy(const Sample& s): s_(s), wf_(s.wf), // no con
   else if ( s.ctrl.polarization == "MLWF_REF_Q" )
   {
     pol_type_ = mlwf_ref;
-    //compute_quadrupole_ = true;
   }
   else
   {
@@ -160,7 +152,6 @@ ElectricEnthalpy::ElectricEnthalpy(const Sample& s): s_(s), wf_(s.wf), // no con
 
   mlwfc_.resize(nst);
   mlwfs_.resize(nst);
-  //quad_.resize(nst);  // no quadrupole  
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -202,11 +193,11 @@ void ElectricEnthalpy::update(void)
   const UnitCell& cell = sd_.basis().cell();
   // compute cos and sin matrices
   tmap["mlwf_update"].start();
-  if (pol_type_ == tdmlwf) tdmlwft_->update();
+  if (pol_type_ == tdmlwf || pol_type_ == tdmlwf_ref) tdmlwft_->update(); //CS
   if (pol_type_ ==mlwf)  mlwft_->update();
   tmap["mlwf_update"].stop();
   vector<SlaterDet*> sdcos(3), sdsin(3);
-  if (pol_type_ == tdmlwf)
+  if (pol_type_ == tdmlwf || pol_type_ == tdmlwf_ref) //CS
   {
   sdcos[0] = tdmlwft_->sdcosx();
   sdcos[1] = tdmlwft_->sdcosy();
@@ -233,7 +224,7 @@ void ElectricEnthalpy::update(void)
     if (pol_type_ == tdmlwf || pol_type_ == tdmlwf_ref) 
     { 
       tdmlwft_->compute_transform();
-      tdmlwft_->apply_transform(sd_);
+      tdmlwft_->apply_transform(sd_); //works w/ ETRS only. Comment out for FORKTD
     }
     else
     {
@@ -260,7 +251,6 @@ void ElectricEnthalpy::update(void)
       tmap["correction"].start();
       compute_correction();
       tmap["correction"].stop();
-      //CS: currently under construction 
     }
 
     for ( int i = 0; i < sd_.nst(); i++ )
@@ -373,17 +363,19 @@ void ElectricEnthalpy::update(void)
             int size = cc.size();
             double alpha = e_field_[idir];
             int ione = 1;
+            //cp.axpy(alpha,cc);
             daxpy (&size, &alpha, cc.valptr(), &ione, cp.valptr(), &ione);
           } 
 	  else if (pol_type_ == tdmlwf_ref) //CS
 	  { 
 	  // TDMLWF refinement for complex wavefxn
-	    ComplexMatrix cc(rwf_[idir]->sd(0,0)->c());
-            ComplexMatrix cp(dwf_->sd(0,0)->c());
+	    ComplexMatrix& cc(rwf_[idir]->sd(0,0)->c());
+            ComplexMatrix& cp(dwf_->sd(0,0)->c());
 
             int size = cc.size();
-            complex<double> alpha = e_field_[idir];
+            complex<double> alpha = complex<double>(e_field_[idir],0);
             int ione = 1;
+            //cp.axpy(alpha,cc);
             zaxpy (&size, &alpha, cc.valptr(), &ione, cp.valptr(), &ione);
           } // if pol_type_
         } // if e_field_[idir]
@@ -404,6 +396,7 @@ double ElectricEnthalpy::enthalpy(Wavefunction& dwf, bool compute_hpsi)
     return 0.0;
 
   enthalpy_ = - e_field_ * dipole_total_;
+  //cout<<"dipole:\t"<<dipole_el_<<endl;
   if ( compute_hpsi )
   {
     // assert gamma-only and no spin
@@ -418,14 +411,13 @@ double ElectricEnthalpy::enthalpy(Wavefunction& dwf, bool compute_hpsi)
 // Phys. Rev. B 73, 075121 (2006)
 // Calculate correction in real space and derivatives of the correction
 ///////////////////////////////////////////////////////////////////////////////
-//CS
-void ElectricEnthalpy::compute_correction(void)
+void ElectricEnthalpy::compute_correction(void)  
 {
   int np0v = basis_.np(0);
   int np1v = basis_.np(1);
   int np2v = basis_.np(2);
   const ComplexMatrix& c = sd_.c();
-  DoubleMatrix cp(c);
+  //DoubleMatrix cp(c);
 
   FourierTransform ft(basis_,np0v,np1v,np2v);
 
@@ -444,9 +436,9 @@ void ElectricEnthalpy::compute_correction(void)
   ComplexMatrix& cy = rwf_[1]->sd(0,0)->c();
   ComplexMatrix& cz = rwf_[2]->sd(0,0)->c();
 
-  DoubleMatrix cpx(cx);
-  DoubleMatrix cpy(cy);
-  DoubleMatrix cpz(cz);
+  //DoubleMatrix cpx(cx);
+  //DoubleMatrix cpy(cy);
+  //DoubleMatrix cpz(cz);
 
   // calculate refinements
   // ref is scaled by np012v
@@ -491,19 +483,16 @@ void ElectricEnthalpy::compute_correction(void)
     fill(ref.begin(),ref.end(),0.0);
 
     // wavefunctions in real space
-    vector<complex<double> > wftmp(np012loc);
-    vector<complex<double> > xwftmp(np012loc);
-    vector<complex<double> > ywftmp(np012loc);
-    vector<complex<double> > zwftmp(np012loc);
+    vector<complex<double>>  wftmp(np012loc);
+    vector<complex<double>>  xwftmp(np012loc);
+    vector<complex<double>>  ywftmp(np012loc);
+    vector<complex<double>>  zwftmp(np012loc);
 
     for ( int in = 0; in < nloc; in++ )
     {
       int n = c.jglobal(in);
       double* pref;
-     // if ( compute_quadrupole_ )
-      //  pref = &ref[9*n];
-    //  else
-        pref = &ref[3*n];
+      pref = &ref[3*n];
 
       // real space wavefunction in wftmp
       tmap["ft"].start();
@@ -556,29 +545,19 @@ void ElectricEnthalpy::compute_correction(void)
         int ix = ft.i(i);
         int iy = ft.j(i);
         int iz = ft.k(i);
+        const complex<double> wft = wftmp[i];
+        const complex<double> xwft = wft * vx[ix];
+        const complex<double> ywft = wft * vy[iy];
+        const complex<double> zwft = wft * vz[iz];
 
-        const double wft = real(wftmp[i]);
-        const double xwft = wft * vx[ix];
-        const double ywft = wft * vy[iy];
-        const double zwft = wft * vz[iz];
-
-        pref[0] += wft * xwft;
-        pref[1] += wft * ywft;
-        pref[2] += wft * zwft;
+        pref[0] += real(conj(wft) * wft)*vx[ix];
+        pref[1] += real(conj(wft) * wft)*vy[iy];
+        pref[2] += real(conj(wft) * wft)*vz[iz];
 
         xwftmp[i] = xwft;
         ywftmp[i] = ywft;
         zwftmp[i] = zwft;
 
-       // if ( compute_quadrupole_ )
-       // {
-       //   pref[3] += xwft * xwft;
-       //   pref[4] += ywft * ywft;
-       //   pref[5] += zwft * zwft;
-       //   pref[6] += xwft * ywft;
-       //   pref[7] += ywft * zwft;
-       //   pref[8] += zwft * xwft;
-      //  }
       } // for i
       tmap["real"].stop();
 
@@ -598,33 +577,11 @@ void ElectricEnthalpy::compute_correction(void)
 
     ctxt_.barrier();
     tmap["dsum"].start();
-   // if ( compute_quadrupole_ )
-   //   ctxt_.dsum(9*nst,1,&ref[0],9*nst);
-  //  else
       ctxt_.dsum(3*nst,1,&ref[0],3*nst);
     tmap["dsum"].stop();
 
     tmap["real"].start();
-  /*  if ( compute_quadrupole_ )
-    {
-      for ( int ist = 0; ist < nst; ist++ )
-      {
-        D3vector& pcor = correction_[ist];
-        //D3tensor& pquad = quad_[ist];
-
-        pcor[0] += ref[ist*9]/np012v;
-        pcor[1] += ref[ist*9+1]/np012v;
-        pcor[2] += ref[ist*9+2]/np012v;
-        pquad.setdiag ( 0, ref[ist*9+3]/np012v - pcor[0] * pcor[0] );
-        pquad.setdiag ( 1, ref[ist*9+4]/np012v - pcor[1] * pcor[1] );
-        pquad.setdiag ( 2, ref[ist*9+5]/np012v - pcor[2] * pcor[2] );
-        pquad.setoffdiag ( 0, ref[ist*9+6]/np012v - pcor[0] * pcor[1] );
-        pquad.setoffdiag ( 1, ref[ist*9+7]/np012v - pcor[1] * pcor[2] );
-        pquad.setoffdiag ( 2, ref[ist*9+8]/np012v - pcor[2] * pcor[0] );
-      }
-    } */
-  //  else
-    {
+    {  
       for ( int ist = 0; ist < nst; ist++ )
       {
         D3vector& pcor = correction_[ist];
@@ -636,7 +593,6 @@ void ElectricEnthalpy::compute_correction(void)
     tmap["real"].stop();
   } // for iter
 }
-//CS
 
 ////////////////////////////////////////////////////////////////////////////////
 void ElectricEnthalpy::print(ostream& os) const
@@ -661,23 +617,7 @@ void ElectricEnthalpy::print(ostream& os) const
            << setw(12) << mlwfc_[i].x + correction_[i].x << " "
            << setw(12) << mlwfc_[i].y + correction_[i].y << " "
            << setw(12) << mlwfc_[i].z + correction_[i].z << " \"";
-        //if ( compute_quadrupole_ )
-       // {
-          // add spread attribute
-          //os << " \n     spread=\" " << sqrt(quad_[i].trace()) << " \"";
-       // }
         os << "/>" << endl;
-	/*
-        if ( compute_quadrupole_ )
-          os << "    <quad>"
-             << setw(12) << quad_[i][0] << " "
-             << setw(12) << quad_[i][4] << " "
-             << setw(12) << quad_[i][8] << " "
-             << setw(12) << quad_[i][1] << " "
-             << setw(12) << quad_[i][2] << " "
-             << setw(12) << quad_[i][5]
-             << " </quad>" << endl;
-	*/
       }
     }
     os << " </mlwf_set>" << endl;
@@ -699,57 +639,6 @@ void ElectricEnthalpy::print(ostream& os) const
      << setw(14) << dipole_total_.y << " "
      << setw(14) << dipole_total_.z << " </dipole_total>\n";
   os << " </dipole>\n";
-/*
-  if ( compute_quadrupole_ )
-  {
-    //D3tensor q_mlwfc;
-    //D3tensor q_mlwfs;
-    for ( int ist = 0; ist < sd_.nst(); ist++ )
-    {
-      D3vector ctr = mlwfc_[ist];
-      for (int j=0; j<3; j++)
-      {
-        for (int k = 0; k < 3; k++)
-          q_mlwfc[j*3+k] -= 2.0 * ctr[j] * ctr[k];
-      }
-      q_mlwfs -= quad_[ist] * 2.0;
-    } // for ist
-
-    D3tensor q_ion = s_.atoms.quadrupole();
-    D3tensor q_mlwf = q_mlwfc + q_mlwfs;
-    //total primitive quadrupoles
-    D3tensor q_total = q_ion + q_mlwf;
-    //traceless quadrupole
-    D3tensor q_traceless = q_total;
-    q_traceless.traceless();
-
-    os << " <quadrupole> " << endl;
-    os << "   <quadrupole_ion> " << endl
-       << q_ion
-       << "   </quadrupole_ion>" << endl;
-    os << "   <quadrupole_el> " << endl
-       << q_mlwf
-       << "   </quadrupole_el>" << endl;
-    os << "   <quadrupole_total> " << endl
-       << q_total
-       << "   </quadrupole_total>" << endl;
-    os << "   <traceless_quadrupole> " << endl
-       << q_traceless
-       << "   </traceless_quadrupole>" << endl;
-    char uplo = 'u';
-    D3vector eigval;
-    //D3tensor eigvec;
-    q_traceless.syev(uplo, eigval, eigvec);
-    os << "   <traceless_quadrupole_eigval> " << endl
-       << "    " << eigval << endl
-       << "   </traceless_quadrupole_eigval>" << endl;
-    os << "   <traceless_quadrupole_eigvec> " << endl
-       << eigvec
-       << "   </traceless_quadrupole_eigvec>" << endl;
-    os << " </quadrupole> " << endl;
-  }
-*/
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////
