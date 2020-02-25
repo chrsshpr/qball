@@ -154,7 +154,7 @@ ElectricEnthalpy::ElectricEnthalpy(const Sample& s): s_(s), wf_(s.wf),
   mlwfs_.resize(nst);
 }
 
-///////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////
 ElectricEnthalpy::~ElectricEnthalpy(void)
 {
   if ( pol_type_ == off ) return;
@@ -224,7 +224,7 @@ void ElectricEnthalpy::update(void)
     if (pol_type_ == tdmlwf || pol_type_ == tdmlwf_ref) 
     { 
       tdmlwft_->compute_transform();
-      tdmlwft_->apply_transform(sd_); //works w/ ETRS only. Comment out for FORKTD
+      //tdmlwft_->apply_transform(sd_); //Wavefunction must be in Wannier gauge 
     }
     else
     {
@@ -443,7 +443,6 @@ void ElectricEnthalpy::compute_correction(void)
   // calculate refinements
   // ref is scaled by np012v
   vector<double> ref(nst*3);
-  //if ( compute_quadrupole_ ) ref.resize(nst*9);
 
   // cell size;
   const UnitCell& cell = sd_.basis().cell();
