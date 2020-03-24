@@ -380,12 +380,14 @@ void ElectricEnthalpy::update(void)
           } // if pol_type_
           ComplexMatrix& cp(dwf_->sd(0,0)->c());
           ComplexMatrix& cp_ref(wf_.sd(0,0)->c());
+          //generate_the_Hamiltonian_matrix
           ComplexMatrix Ham(cp_ref.context(),cp_ref.n(),cp_ref.n(),cp_ref.nb(),cp_ref.nb());
           ComplexMatrix Corr(Ham);
           Corr.clear();
           Ham.gemm('c','n',1.0,wf_.sd(0,0)->c(),dwf_->sd(0,0)->c(),0.0);
           Corr +=Ham;
           Corr.transpose( complex<double>(-1.0,0.0) ,Ham,complex<double>(1.0,0.0) );
+          //get anti-hermitian term
           complex<double> alpha = complex<double>(-0.5,0);
           cp.gemm('n','n',alpha,cp_ref,Corr,1.0);
         } // if e_field_[idir]
