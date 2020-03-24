@@ -112,6 +112,7 @@ using namespace std;
 #include <vars/Ecutden.h>
 #include <vars/Ecuts.h>
 #include <vars/Efield.h>
+#include <vars/EfieldAnti.h>
 #include <vars/Polarization.h>
 #include <vars/Emass.h>
 #include <vars/ExtStress.h>
@@ -377,6 +378,7 @@ int main(int argc, char **argv, char **envp)
   ui->addVar(new Ecutden(s));
   ui->addVar(new Ecuts(s));
   ui->addVar(new Efield(s));
+  ui->addVar(new EfieldAnti(s));
   ui->addVar(new Polarization(s));
   ui->addVar(new Emass(s));
   ui->addVar(new ExtStress(s));

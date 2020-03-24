@@ -145,7 +145,7 @@ struct Control
   double fcp_th_width;
   double fcp_pmass;
   double fcp_mu;
-
+  bool e_field_anti_corr;
   D3vector e_field;
   std::string polarization;
 
