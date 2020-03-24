@@ -378,6 +378,16 @@ void ElectricEnthalpy::update(void)
             //cp.axpy(alpha,cc);
             zaxpy (&size, &alpha, cc.valptr(), &ione, cp.valptr(), &ione);
           } // if pol_type_
+          ComplexMatrix& cp(dwf_->sd(0,0)->c());
+          ComplexMatrix& cp_ref(wf_.sd(0,0)->c());
+          ComplexMatrix Ham(cp_ref.context(),cp_ref.n(),cp_ref.n(),cp_ref.nb(),cp_ref.nb());
+          ComplexMatrix Corr(Ham);
+          Corr.clear();
+          Ham.gemm('c','n',1.0,wf_.sd(0,0)->c(),dwf_->sd(0,0)->c(),0.0);
+          Corr +=Ham;
+          Corr.transpose( complex<double>(-1.0,0.0) ,Ham,complex<double>(1.0,0.0) );
+          complex<double> alpha = complex<double>(-0.5,0);
+          cp.gemm('n','n',alpha,cp_ref,Corr,1.0);
         } // if e_field_[idir]
       } // for idir
     } // if finite_field_
