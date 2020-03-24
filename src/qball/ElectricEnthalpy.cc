@@ -382,16 +382,16 @@ void ElectricEnthalpy::update(void)
           {
               ComplexMatrix& cp(dwf_->sd(0,0)->c());
               ComplexMatrix& cp_ref(wf_.sd(0,0)->c());
-              //generate_the_Hamiltonian_matrix
-              ComplexMatrix Ham(cp_ref.context(),cp_ref.n(),cp_ref.n(),cp_ref.nb(),cp_ref.nb());
-              ComplexMatrix Corr(Ham);
-              Corr.clear();
-              Ham.gemm('c','n',1.0,wf_.sd(0,0)->c(),dwf_->sd(0,0)->c(),0.0);
-              Corr +=Ham;
-              Corr.transpose( complex<double>(-1.0,0.0) ,Ham,complex<double>(1.0,0.0) );
+              //generate_the_operator_matrix
+              ComplexMatrix op(cp_ref.context(),cp_ref.n(),cp_ref.n(),cp_ref.nb(),cp_ref.nb());
+              ComplexMatrix correction(op);
+              correction.clear();
+              op.gemm('c','n',1.0,wf_.sd(0,0)->c(),dwf_->sd(0,0)->c(),0.0);
+              correction +=op;
+              correction.transpose( complex<double>(-1.0,0.0) , op ,complex<double>(1.0,0.0) );
               //get anti-hermitian term
               complex<double> alpha = complex<double>(-0.5,0);
-              cp.gemm('n','n',alpha,cp_ref,Corr,1.0);
+              cp.gemm('n','n',alpha,cp_ref,correction,1.0);
           }
         } // if e_field_[idir]
       } // for idir
