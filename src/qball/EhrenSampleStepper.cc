@@ -687,17 +687,15 @@ if (s_.ctrl.saveholefreq > 0)
                 ortho.gemm('c','n',1.0,(*s_.proj_wf).sd(ispin,ikp)->c(),(wf).sd(ispin,ikp)->c(),0.0);
                 hole.gemm('c','n',1.0,ortho,ortho,0.0);
                 tmap["gemm"].stop();
-                ortho.clear();
                 valarray<double> w((wf.sd(ispin,ikp)->c()).n());
                 ComplexMatrix z(ortho);
                 hole.heev('l', w,z);
-                hole.clear();
                 ComplexMatrix c(wf.sd(ispin,ikp)->c());
                 tmap["gemm"].start();
                 c.gemm('n','n',1.0,(wf).sd(ispin,ikp)->c(),z,0.0);
                 tmap["gemm"].stop();
                 z.clear();
-
+                //c.print(cout);
                 const Basis& basis = wf.sd(ispin,ikp)->basis();
                 int np0 = basis.np(0);
                 int np1 = basis.np(1);
@@ -751,6 +749,13 @@ if (s_.ctrl.saveholefreq > 0)
                              {
                                  c.context().dsend(size,1,&wftmpr[0],1,0,0);
                              }
+                      }
+                 }
+                 if ( c.context().oncoutpe() )
+                 {
+                      for ( int i = 0; i < ft.np012(); i++ )
+                      {
+                        tmpr[i] = wftmpr[i];
                       }
                  }
                  if ( ctxt.oncoutpe())
