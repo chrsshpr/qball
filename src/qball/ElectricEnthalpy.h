@@ -103,7 +103,7 @@ class ElectricEnthalpy
 
   void update(void);
   void print(std::ostream& os) const;
-
+  void update_e_field(D3vector field);
   ElectricEnthalpy( const Sample& s);
   ~ElectricEnthalpy(void);
 };

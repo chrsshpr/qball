@@ -284,6 +284,15 @@ void EhrenSampleStepper::step(int niter)
   for ( int iter = 0; iter < niter; iter++ )
   {
 
+    if (s_.ctrl.compute_sine_field)
+    {
+         if(s_.ctrl.sine_field[0]==0)
+                s_.ctrl.e_field[0] = s_.ctrl.sine_field[1]*sin(2*M_PI*s_.ctrl.dt*iter/s_.ctrl.sine_field[2]);
+         if(s_.ctrl.sine_field[0]==1)
+                s_.ctrl.e_field[1] = s_.ctrl.sine_field[1]*sin(2*M_PI*s_.ctrl.dt*iter/s_.ctrl.sine_field[2]);
+         if(s_.ctrl.sine_field[0]==2)
+                s_.ctrl.e_field[2] = s_.ctrl.sine_field[1]*sin(2*M_PI*s_.ctrl.dt*iter/s_.ctrl.sine_field[2]);
+    }
     // check timing
     if (s_.ctrl.run_timer > 0.0 && niter > 1 && iter > 1 && testtimer) {
       double tnow = MPI_Wtime();
@@ -695,6 +704,18 @@ if (s_.ctrl.saveholefreq > 0)
                 c.gemm('n','n',1.0,(wf).sd(ispin,ikp)->c(),z,0.0);
                 tmap["gemm"].stop();
                 z.clear();
+                if ( ctxt.oncoutpe())
+                {
+                   cout << " <NTO_set size=\"" << (wf.sd(ispin,ikp)->c()).n() << "\">" << endl;
+                   for ( int i = 0; i < (wf.sd(ispin,ikp)->c()).n(); i++ )
+                   {
+                        cout.setf(ios::fixed, ios::floatfield);
+                        cout.setf(ios::right, ios::adjustfield);
+                        cout << "   <NTO value=\"" << setprecision(6)
+                        << setw(12) << w[i]
+                        << endl;
+                   }
+                }
                 //c.print(cout);
                 const Basis& basis = wf.sd(ispin,ikp)->basis();
                 int np0 = basis.np(0);
@@ -760,6 +781,7 @@ if (s_.ctrl.saveholefreq > 0)
                  }
                  if ( ctxt.oncoutpe())
                  {
+
                         ofstream os;
                         ostringstream oss;
                         oss.width(7);  oss.fill('0');  oss << s_.ctrl.mditer;

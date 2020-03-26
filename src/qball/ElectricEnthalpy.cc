@@ -661,3 +661,9 @@ ostream& operator<< ( ostream& os, const ElectricEnthalpy& e )
   e.print(os);
   return os;
 }
+void ElectricEnthalpy::update_e_field(D3vector field)
+{
+  e_field_ = field;
+  finite_field_ = norm(e_field_) != 0.0;
+}
+

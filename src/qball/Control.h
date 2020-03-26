@@ -156,6 +156,8 @@ struct Control
   int saveholefreq;
   int holeindex;
   string saveholefilebase;
+  D3vector sine_field;
+  bool  compute_sine_field ;
 
 };
 #endif

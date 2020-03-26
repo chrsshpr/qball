@@ -1005,7 +1005,8 @@ void EnergyFunctional::update_vhxc(void) {
     sigma_vdw[5] = stress[8];
     
   }
-
+  if ((s_.ctrl.compute_sine_field) &&  el_enth_)
+       el_enth_->update_e_field(s_.ctrl.e_field);
   if ( el_enth_ )
        el_enth_->update();
   
