@@ -165,6 +165,7 @@ using namespace std;
 #include <vars/SaveWfFreq.h>
 #include <vars/SaveProjFreq.h>
 #include <vars/SaveHoleFreq.h>
+#include <vars/SaveElecFreq.h>
 #include <vars/Save2ndProjFreq.h>
 #include <vars/Sinefield.h>
 #include <vars/CalDipFreq.h>
@@ -433,6 +434,7 @@ int main(int argc, char **argv, char **envp)
   ui->addVar(new SaveWfFreq(s));
   ui->addVar(new SaveProjFreq(s));
   ui->addVar(new SaveHoleFreq(s));
+  ui->addVar(new SaveElecFreq(s));
   ui->addVar(new Save2ndProjFreq(s));
   ui->addVar(new Sinefield(s));
   ui->addVar(new CalDipFreq(s));
