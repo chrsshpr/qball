@@ -385,7 +385,10 @@ class ComplexMatrix
     { return mb_*(nprow_*(ilocal/mb_)+myrow_)+ilocal%mb_; }
     int jglobal(int jlocal) const
     { return nb_*(npcol_*(jlocal/nb_)+mycol_)+jlocal%nb_; }
- 
+    int iglobal(int iprow, int ilocal) const
+    { return mb_*(nprow_*(ilocal/mb_)+iprow)+ilocal%mb_; }
+    int jglobal(int jpcol, int jlocal) const
+    { return nb_*(npcol_*(jlocal/nb_)+jpcol)+jlocal%nb_; }
     // store element a(ii,jj) (where ii,jj are global indices)
     // in array val:
     //        int iii = l(ii) * mb_ + x(ii);
