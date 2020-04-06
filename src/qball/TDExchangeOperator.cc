@@ -251,15 +251,15 @@ double ExchangeOperator::update_energy(bool compute_stress)
 {
   if ( gamma_only_ )
     return eex_ = compute_exchange_at_gamma_(s_.wf, 0, compute_stress);
-  else
-    return eex_ = compute_exchange_for_general_case_(s_.wf, 0, compute_stress);
+
+  //else
+  //  return eex_ = compute_exchange_for_general_case_(s_.wf, 0, compute_stress);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 double ExchangeOperator::update_operator(bool compute_stress)
 {
   dwf0_.clear();
-
   // compute exchange energy and derivatives
   if ( gamma_only_ )
     eex_ = compute_exchange_at_gamma_(s_.wf, &dwf0_, compute_stress);
@@ -320,7 +320,7 @@ void ExchangeOperator::apply_VXC_(double mix, Wavefunction& wf_ref,
 ////////////////////////////////////////////////////////////////////////////////
 void ExchangeOperator::apply_operator(Wavefunction& dwf)
 {
-  cout << "ExchangeOperator::apply_operator" << endl;
+  //cout << "ExchangeOperator::apply_operator" << endl;
   // apply sigmaHF to s_.wf and store result in dwf
   // use the reference function wf0_ and reference sigma(wf) dwf0_
   apply_VXC_(1.0, wf0_, dwf0_, dwf);
@@ -1336,7 +1336,6 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
 
     // real-space local states -> statej_[i][ir]
     // loop over states 2 by 2
-    cout<<"size:"<<sd.nstloc()<<endl;
     for ( int i = 0; i < sd.nstloc(); i+=1 )
     {
       wft_->backward(c.cvalptr(i*c.mloc()),&tmp_[0]);
@@ -1367,7 +1366,6 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
     const double *g2 = vbasis_->g2_ptr();
     const double *g2i = vbasis_->g2i_ptr();
     const double rc2 = rcut_*rcut_;
-
     // divergence correction (Coulomb potential part only)
     // The interaction potential is
     // beta_sx*(1/r) + (alpha_sx-beta_sx)*erf(mu*r)/r
@@ -1423,7 +1421,6 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
       for ( int i = 0; i < nStatesKpi_ * dc.mloc(); i++ )
         force_kpi_[i]=0.0;
     }
-
     // initiate send nStatesKpi_ and receive nNextStatesKpi_
     InitPermutation();
 
@@ -1694,7 +1691,6 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
 
       } // if nPair > 0
       // End of loop over pairs
-
       if (dwf)
       {
         // finish receiving forces in force_kpi_[]
@@ -1744,7 +1740,6 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
         // forces to the send buffer
         StartForcesPermutation(dc.mloc());
       } // if dwf
-
       CompleteSendingOccupations(iRotationStep);
       StartOccupationsPermutation();
 
@@ -1752,7 +1747,6 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
       nStatesKpi_ = nNextStatesKpi_;
     } // iRotationStep
     // end of rotation of the states of kpoint i from this point
-
 #if LOAD_MATRIX
     // collect load_matrix
     gcontext_.isum('R', load_matrix.size(), 1, &load_matrix[0],
@@ -1800,7 +1794,6 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
            << endl;
     }
 #endif
-
     // wait for all communications to be completed
     // complete all permutations except forces
     CompleteReceivingStates(1);
@@ -1816,23 +1809,20 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
     }
 
     FreePermutation();
-
     // transform accumulated real-space forces to G space
     // loop over pairs of states
     for ( int i = 0; i < nStatesKpi_; i+=1 )
     {
-      int i = nStatesKpi_ ;
       // transform the force
-      wft_->forward(&(dstatej_[i])[0], &buffer_forces_1_[0]);
-
+      
+      wft_->forward(&(dstatej_[i])[0], &buffer_forces_2_[0]);
       // accumulate contributions into dc
       complex<double> *p1=dc.valptr(i*dc.mloc());
       complex<double> *pf1=&force_kpi_[i*dc.mloc()];
       for ( int j = 0; j < dc.mloc(); j++ )
-        p1[j] = buffer_forces_1_[j] + pf1[j];
+        p1[j] = buffer_forces_2_[j] + pf1[j];
     }
-    // dc now contains the forces
-
+    // dc now contains the forces  
     // divergence corrections from long range Coulomb part
     if ( alpha_sx_ != 0.0 )
     {

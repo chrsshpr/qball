@@ -56,7 +56,7 @@ class NonLocalPotential;
 class ConfinementPotential;
 class EnthalpyFunctional;
 class HubbardPotential;
-
+class ExchangeOperator;
 typedef map<string,Timer> TimerMap;
 
 class EnergyFunctional
@@ -73,6 +73,7 @@ class EnergyFunctional
   vector<vector<FourierTransform*> > ft;
   StructureFactor sf;
   XCPotential* xcp_;
+  ExchangeOperator* xop_;
   AbsorbingPotential* abp_;
   EnthalpyFunctional* epvf;
   ElectricEnthalpy* el_enth_;
@@ -96,7 +97,8 @@ class EnergyFunctional
       ecoul_, exc_, esr_, eself_, ets_, epv_, eexf_, etotal_, eefield_, enthalpy_;
   double eharris_;  // terms for Harris-Foulkes estimate for convergence detection
   double evdw_; //van der Waals energy
-
+  double hf_contribution;
+  bool not_hartree_fock;
   vector<double> fion_vdw_;
   
   valarray<double> sigma_ekin,sigma_econf,sigma_eps,sigma_ehart,sigma_exc, sigma_vdw,

@@ -42,7 +42,7 @@
 #include "EnthalpyFunctional.h"
 #include "HubbardPotential.h"
 #include "dftd3.h"
-
+#include "TDExchangeOperator.h" 
 #include "Timer.h"
 #include <math/blas.h>
 
@@ -123,7 +123,8 @@ EnergyFunctional::EnergyFunctional( Sample& s, const Wavefunction& wf, ChargeDen
     rhops[is].resize(ngloc);
     if ( atoms.na(is) > namax_ ) namax_ = atoms.na(is);
   }
-
+  not_hartree_fock= true;
+  if (s_.ctrl.xc=="HF") not_hartree_fock=false;
   // AS: compute total electronic density used for setting up the Hamiltonian
   if (s_.ctrl.tddft_involved)
   {
@@ -135,14 +136,24 @@ EnergyFunctional::EnergyFunctional( Sample& s, const Wavefunction& wf, ChargeDen
      update_hamiltonian();
 
      // AS: the charge density based on hamil_wf has to be used
-     xcp_ = new XCPotential((*hamil_cd_),s_.ctrl.xc,cd_);
+     if (not_hartree_fock) 
+     {
+        xcp_ = new XCPotential((*hamil_cd_),s_.ctrl.xc,cd_);
+        s_.ctrl.mgga = (xcp_->xcf()->ismGGA());
+     }
   }
   else
-  {
-     xcp_ = new XCPotential(cd_,s_.ctrl.xc);
+  {  
+     if (not_hartree_fock) 
+     {
+        xcp_ = new XCPotential(cd_,s_.ctrl.xc);
+        s_.ctrl.mgga = (xcp_->xcf()->ismGGA());
+     }
   } 
+  hf_contribution=s_.ctrl.hf;
+  if (hf_contribution >0)   xop_= new ExchangeOperator(s, hf_contribution, hf_contribution, 0.0);
   // check mgga YY
-  s_.ctrl.mgga = (xcp_->xcf()->ismGGA());
+  //s_.ctrl.mgga = (xcp_->xcf()->ismGGA());
   if (s_.ctrl.has_absorbing_potential) {
     abp_ = new AbsorbingPotential(cd_,s_.ctrl.absorbing_potential);
   }
@@ -302,7 +313,7 @@ EnergyFunctional::~EnergyFunctional(void) {
 
   if(s_.ctrl.vdw == "D3") dftd3_end();
   
-  delete xcp_;
+  if (not_hartree_fock)  delete xcp_;
   delete el_enth_;
   for ( int ispin = 0; ispin < wf_.nspin(); ispin++ )
     if (wf_.spinactive(ispin)) {
@@ -414,11 +425,11 @@ void EnergyFunctional::update_vhxc(void) {
       vxc_tau[ispin][i] = 0.0; //YY
   
   //fill(v_r[ispin].begin(),v_r[ispin].end(),0.0);
-
-  xcp_->update(v_r, vxc_tau); //YY
+  if (not_hartree_fock)  xcp_->update(v_r, vxc_tau); //YY
   if (s_.ctrl.has_absorbing_potential && s_.ctrl.tddft_involved) {
   abp_->update(vabs_r); } // YY
-  exc_ = xcp_->exc();
+  if (not_hartree_fock) exc_ = xcp_->exc();
+  if (hf_contribution >0) exc_ +=  xop_->update_operator(false);
   tmap["exc"].stop();
 
 
@@ -1044,11 +1055,12 @@ void EnergyFunctional::update_harris(void) {
    }
   
    // update XC energy and potential
-  xcp_->update(v_r, vxc_tau); //YY
+  if (not_hartree_fock)  xcp_->update(v_r, vxc_tau); //YY
   if (s_.ctrl.has_absorbing_potential && s_.ctrl.tddft_involved) {
   abp_->update(vabs_r); } // YY
-  eharris_ = xcp_->exc();
-
+  if (not_hartree_fock)  eharris_ = xcp_->exc();
+  if (hf_contribution >0) eharris_ +=  xop_->update_operator(false);
+ 
   // compute local potential energy: 
   // integral of el. charge times ionic local pot.
   int len=2*ngloc,inc1=1;
@@ -1121,10 +1133,13 @@ void EnergyFunctional::update_exc_ehart_eps(void)
 
   // update XC energy and potential
   tmap["exc"].start();
-  xcp_->update_exc(v_r);
-  exc_ = xcp_->exc();
+  if (not_hartree_fock) 
+  {   
+      xcp_->update_exc(v_r);
+      exc_ = xcp_->exc();
+  }
   tmap["exc"].stop();
-
+  if (hf_contribution >0) exc_ +=  xop_->update_operator(false);
   // compute local potential energy:
   // integral of el. charge times ionic local pot.
   // AS: the current charge density has to be used
@@ -1494,8 +1509,10 @@ double EnergyFunctional::energy(Wavefunction& psi, bool compute_hpsi, Wavefuncti
   
   // Stress from exchange-correlation
   if ( compute_stress ) {
-    xcp_->compute_stress(sigma_exc);
+     if (not_hartree_fock) xcp_->compute_stress(sigma_exc);
+     if (hf_contribution >0) xop_->add_stress(sigma_exc);
   }
+  
   
   // zero ionic forces
   if (compute_forces) {
@@ -1764,6 +1781,8 @@ double EnergyFunctional::energy(Wavefunction& psi, bool compute_hpsi, Wavefuncti
         }
       }
     }
+    if (hf_contribution) xop_->apply_operator(dwf);
+
     tmap["hpsi"].stop();
   } // if compute_hpsi
 
