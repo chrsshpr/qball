@@ -1659,7 +1659,7 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
               double *pr = (double *) &rhor1_[0];
 #pragma omp parallel for
               for ( int ip = 0; ip < np012loc_; ip+=1 )
-                dstatei_[i][ip] +=  dstatei_[j][ip]* rhor1_[ip] * weight;
+                dstatei_[i][ip] +=  statei_[j][ip]* rhor1_[ip] * weight;
             }
           }
           else
