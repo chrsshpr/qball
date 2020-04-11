@@ -49,7 +49,7 @@ using namespace std;
 ////////////////////////////////////////////////////////////////////////////////
 ExchangeOperator::ExchangeOperator( Sample& s, double alpha_sx,
   double beta_sx, double mu_sx ) :
-  s_(s), wf0_(s.wf), dwf0_(s.wf), wfc_(s.wf),
+  s_(s), wf0_(s.wf), dwf0_(s.wf),wfc_(s.wf),
   alpha_sx_(alpha_sx), beta_sx_(beta_sx), mu_sx_(mu_sx),
   gcontext_(s.wf.sd(0,0)->context())
 {
@@ -252,7 +252,7 @@ double ExchangeOperator::update_energy(bool compute_stress)
     return eex_ = compute_exchange_at_gamma_(s_.wf, 0, compute_stress);
 
   //else
-  //  return eex_ = compute_exchange_for_general_case_(s_.wf, 0, compute_stress);
+   // return eex_ = compute_exchange_for_general_case_(s_.wf, 0, compute_stress);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -263,7 +263,7 @@ double ExchangeOperator::update_operator(bool compute_stress)
   if ( gamma_only_ )
     eex_ = compute_exchange_at_gamma_(s_.wf, &dwf0_, compute_stress);
   //else
-  //  eex_ = compute_exchange_for_general_case_(s_.wf, &dwf0_, compute_stress);
+    //eex_ = compute_exchange_for_general_case_(s_.wf, &dwf0_, compute_stress);
 
   // wf0_ is kept as a reference state
   wf0_ = s_.wf;
@@ -289,18 +289,17 @@ void ExchangeOperator::apply_VXC_(double mix, Wavefunction& wf_ref,
         ComplexMatrix &dc(dwf.sd(ispin,ikp)->c());
         ComplexMatrix &cref(wf_ref.sd(ispin,ikp)->c());
         ComplexMatrix &dcref(dwf_ref.sd(ispin,ikp)->c());
-	
+	//dcref.print(cout);
 	int nb = c.nb();
         ComplexMatrix matproj1(ctxt,nst,nst,nb,nb);
         ComplexMatrix matproj2(ctxt,nst,nst,nb,nb);
         ComplexMatrix matenergy(ctxt,nst,nst,nb,nb);
 
         // matproj1 = <wf_ref|wf>
-        matproj1.gemm('c','n',1.0,cref,c,0.0);
-
+        matproj1.gemm('c','n',1.0,cref,c,0.0); 
         // dwf += mix * |dwf_ref> * matproj1
         dc.gemm('n','n',mix,dcref,matproj1,1.0);
-
+        
         // matenergy = <dwf_ref|wf_ref>
         matenergy.gemm('c','n',1.0,dcref,cref,0.0);
 
@@ -491,10 +490,10 @@ double ExchangeOperator::compute_exchange_for_general_case_
                        vbasis_->gx(ig+ngloc*2));
             D3vector q1pG(q1+G);
             D3vector q2pG(q2+G);
-            const double q1pG2 = norm2(q1pG);
+            const double q1pG2 = norm(q1pG);
             int_pot1_[ig] = vint(q1pG2);
 
-            const double q2pG2 = norm2(q2pG);
+            const double q2pG2 = norm(q2pG);
             int_pot2_[ig] = vint(q2pG2);
 
             // if iKpi=0 (first k point)
@@ -614,8 +613,8 @@ double ExchangeOperator::compute_exchange_for_general_case_
                                vbasis_->gx(ig+ngloc*2));
                     D3vector q1pG(q1+G);
                     D3vector q2pG(q2+G);
-                    const double q1pG2 = norm2(q1pG);
-                    const double q2pG2 = norm2(q2pG);
+                    const double q1pG2 = norm(q1pG);
+                    const double q2pG2 = norm(q2pG);
                     // dvint(g2) = d vint(g2)/d g2
                     const double d_int_pot1 = dvint(q1pG2);
                     const double d_int_pot2 = dvint(q2pG2);
@@ -885,7 +884,7 @@ double ExchangeOperator::compute_exchange_for_general_case_
           }
 
           // rcut*rcut divergence correction
-          if ( vbasis_->mype() == 0 )
+          if (  (gcontext_.mype() == 0)  )
           {
             const double div_corr_2 = - alpha_sx_ * exfac *
                rcut_ * rcut_ * occ_ki_[i] * wf.weight(iKpi);
@@ -946,11 +945,11 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
   Timer tm;
   Timer tmb;
 
-  wfc_ = wf;
-
+  //wfc_ = wf;
+  //wfc_.update_occ(s_.ctrl.smearing_width,s_.ctrl.smearing_ngauss);
   cout << setprecision(10);
-  const double omega = wfc_.cell().volume();
-  const int nspin = wfc_.nspin();
+  const double omega = wf.cell().volume();
+  const int nspin = wf.nspin();
 
   // spin factor for the pair densities: 0.5 if 1 spin, 1 if nspin==2
   const double spinFactor=0.5*nspin;
@@ -963,12 +962,15 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
   const double *const g_y = vbasis_->gx_ptr(1);
   const double *const g_z = vbasis_->gx_ptr(2);
 
-  for ( int ispin = 0; ispin < wfc_.nspin(); ispin++ )
+  for ( int ispin = 0; ispin < wf.nspin(); ispin++ )
   {
-    SlaterDet& sd = *(wfc_.sd(ispin,0));
+    SlaterDet& sd = *(wf.sd(ispin,0));
     ComplexMatrix& c = sd.c();
     const int nst = sd.nst();
-   /*
+    ComplexMatrix sample(gcontext_,c.n(),c.n(),c.nb(),c.nb());;
+    //sample.gemm('c','n',1.0,(*s_.proj_wf).sd(0,0)->c(),c,0.0);
+    //sample.print(cout);
+    /*
     // if using bisection, localize the wave functions
     if ( use_bisection_ )
     {
@@ -1370,7 +1372,6 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
     // beta_sx*(1/r) + (alpha_sx-beta_sx)*erf(mu*r)/r
     // The coefficient of the long range term is alpha_sx
     // subtract alpha_sx * exp(-rc2*G^2)/G^2
-/* 
    if ( alpha_sx_ != 0.0 )
     {
       for ( int ig = 0; ig < ngloc; ig++ )
@@ -1397,13 +1398,16 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
         }
       }
     }
-*/
     //cout <<" I am safe -1"<<endl;
     // local occupation numbers
     const double* occ = sd.occ_ptr();
-    for ( int i = 0; i < sd.nstloc(); i++ )
-      occ_kj_[i]=occ[c.jglobal(i)];
-
+    
+    for ( int i = 0; i < sd.nstloc(); i++ )  occ_kj_[i]=2.0;
+        //occ_kj_[i]=occ[c.jglobal(i)];
+       //{occ_kj_[i]=sd.occ(c.jglobal(i));
+       //cout<< sd <<endl;
+       //occ_kj_[i]=2.0;
+    //}
     // number of states to be sent
     nStatesKpi_ = sd.nstloc();
 
@@ -1476,7 +1480,7 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
             // the condition i>=j
             int parity_i = iGlobI & 1;
             int parity_j = iGlobJ & 1;
-            cout<<"parity_i:\t"<<parity_i<<"parity_j:\t"<<parity_j<<endl;
+            //cout<<"parity_i:\t"<<parity_i<<"parity_j:\t"<<parity_j<<endl;
             if ( parity_i == parity_j )
             {
               if ( iGlobI >= iGlobJ )
@@ -1603,7 +1607,7 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
             // and |rho2(G)|^2*V(|G+q2|) to the exchange energy.
             // factor 2.0: real basis
             const double int_pot = vint(g2[ig]);
-            const double t1 =  norm(rhog1_[ig]) * int_pot;
+            const double t1 =   norm(rhog1_[ig]) * int_pot;
             ex_sum_1 += t1;
 
             if ( compute_stress )
@@ -1614,7 +1618,7 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
               const double tgy = g_y[ig];
               const double tgz = g_z[ig];
               // factor 4.0: derivative of G^2 and real basis
-              const double fac1 = -2.0 * norm(rhog1_[ig]) * d_int_pot;
+              const double fac1 = -2.0 *  norm(rhog1_[ig]) * d_int_pot;
               sigma_sum_1[0] += fac1 * tgx * tgx;
               sigma_sum_1[1] += fac1 * tgy * tgy;
               sigma_sum_1[2] += fac1 * tgz * tgz;
@@ -1661,7 +1665,7 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
               double *pr = (double *) &rhor1_[0];
 #pragma omp parallel for
               for ( int ip = 0; ip < np012loc_; ip+=1 )
-                dstatei_[i][ip] +=  statei_[j][ip]* rhor1_[ip] * weight;
+                dstatei_[i][ip] +=  statej_[j][ip]* rhor1_[ip] * weight;
             }
           }
           else
@@ -1823,13 +1827,12 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
       complex<double> *p1=dc.valptr(i*dc.mloc());
       complex<double> *pf1=&force_kpi_[i*dc.mloc()];
       for ( int j = 0; j < dc.mloc(); j++ )
-        p1[j] = buffer_forces_2_[j] + pf1[j];
+         p1[j] = buffer_forces_2_[j] + pf1[j];
     }
     
     // dc now contains the forces  
-   /* 
    // divergence corrections from long range Coulomb part
-    if ( alpha_sx_ != 0.0 )
+  if ( alpha_sx_ != 0.0 )
     {
       const double integ = alpha_sx_ * 4.0 * M_PI * sqrt(M_PI) /
         ( 2.0 * rcut_ );
@@ -1891,10 +1894,8 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
         }
       } // for i
     }
-
     // divergence corrections done
-*/
-  //  if ( use_bisection_ )
+ //  if ( use_bisection_ )
   //  {
   //    bisection_[ispin]->backward(*uc_[ispin], *dwf->sd(ispin,0));
    // }
@@ -1970,8 +1971,8 @@ void ExchangeOperator::StartStatesPermutation(int mloc)
   if ( nStatesKpi_>0 )
   {
     wait_send_states_=1;
-    MPI_Isend((void *) &send_buf_states_[0], 2*nStatesKpi_*mloc,
-      MPI_DOUBLE, iSendTo_, Tag_States, comm_, &send_request_States_ );
+    MPI_Isend((void *) &send_buf_states_[0], nStatesKpi_*mloc,
+      MPI_COMPLEX, iSendTo_, Tag_States, comm_, &send_request_States_ );
   }
   else
   {
@@ -1982,8 +1983,8 @@ void ExchangeOperator::StartStatesPermutation(int mloc)
   if ( nNextStatesKpi_>0 )
   {
     wait_recv_states_=1;
-    MPI_Irecv((void *) &state_kpi_[0], 2*nNextStatesKpi_*mloc,
-      MPI_DOUBLE, iRecvFr_, Tag_States, comm_, &recv_request_States_ );
+    MPI_Irecv((void *) &state_kpi_[0], nNextStatesKpi_*mloc,
+      MPI_COMPLEX, iRecvFr_, Tag_States, comm_, &recv_request_States_ );
   }
   else
   {
@@ -2031,8 +2032,8 @@ void ExchangeOperator::StartForcesPermutation(int mloc)
   if ( nStatesKpi_>0 )
   {
     wait_send_forces_=1;
-    MPI_Isend((void *) &send_buf_forces_[0], 2*nStatesKpi_*mloc,
-      MPI_DOUBLE, iSendTo_, Tag_Forces, comm_, &send_request_Forces_ );
+    MPI_Isend((void *) &send_buf_forces_[0], nStatesKpi_*mloc,
+      MPI_COMPLEX, iSendTo_, Tag_Forces, comm_, &send_request_Forces_ );
   }
   else
   {
@@ -2043,8 +2044,8 @@ void ExchangeOperator::StartForcesPermutation(int mloc)
   if ( nNextStatesKpi_>0 )
   {
     wait_recv_forces_=1;
-    MPI_Irecv((void *) &force_kpi_[0], 2*nNextStatesKpi_*mloc,
-      MPI_DOUBLE, iRecvFr_, Tag_Forces, comm_, &recv_request_Forces_ );
+    MPI_Irecv((void *) &force_kpi_[0], nNextStatesKpi_*mloc,
+      MPI_COMPLEX, iRecvFr_, Tag_Forces, comm_, &recv_request_Forces_ );
   }
   else
   {
