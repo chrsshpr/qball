@@ -76,7 +76,7 @@ ExchangeOperator::ExchangeOperator( Sample& s, double alpha_sx,
   //{
     // create a complex basis
     //!! should avoid the finite k trick to get a complex basis at gamma
-  vbasis_ = new Basis(gcontext_, D3vector(0.00000001,0.00000001,0.00000001));
+  vbasis_ = new Basis(s_.wf.sd(0,0)->basis().context(), D3vector(0.00000001,0.00000001,0.00000001));
   //}
   // the size of the basis for the pair density should be
   // twice the size of the wave function basis
@@ -95,11 +95,9 @@ ExchangeOperator::ExchangeOperator( Sample& s, double alpha_sx,
     // create Fourier transform object wavefunctions
     wft_ = new FourierTransform(  s_.wf.sd(0,0)->basis(),np0v_,np1v_,np2v_);
   }
-  //cout<<"hartree fock setting"<<endl;
   const int ngloc = vbasis_->localsize();
   // create Fourier transform object for densities
   vft_ = new FourierTransform(*vbasis_,np0v_,np1v_,np2v_);
-  //cout <<"here it's a bug"<<endl;
   np012loc_ = vft_->np012loc();
   // allocate memory for densities in G space
   rhog1_.resize(ngloc);
@@ -115,7 +113,6 @@ ExchangeOperator::ExchangeOperator( Sample& s, double alpha_sx,
     int_pot1_.resize(ngloc);
     int_pot2_.resize(ngloc);
   }
-  //cout<<"I am fine there"<<endl;
   // get both local and maximum amount of states on a proc
   {
     if ( s_.wf.nspin()==1 )
@@ -223,7 +220,6 @@ ExchangeOperator::ExchangeOperator( Sample& s, double alpha_sx,
     force_kpi_.resize( nMaxLocalStates_ * mlocMax );
     send_buf_forces_.resize( nMaxLocalStates_ * mlocMax );
   }
-  //cout<<" I am safe here"<<endl;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -289,7 +285,6 @@ void ExchangeOperator::apply_VXC_(double mix, Wavefunction& wf_ref,
         ComplexMatrix &dc(dwf.sd(ispin,ikp)->c());
         ComplexMatrix &cref(wf_ref.sd(ispin,ikp)->c());
         ComplexMatrix &dcref(dwf_ref.sd(ispin,ikp)->c());
-	//dcref.print(cout);
 	int nb = c.nb();
         ComplexMatrix matproj1(ctxt,nst,nst,nb,nb);
         ComplexMatrix matproj2(ctxt,nst,nst,nb,nb);
@@ -318,7 +313,6 @@ void ExchangeOperator::apply_VXC_(double mix, Wavefunction& wf_ref,
 ////////////////////////////////////////////////////////////////////////////////
 void ExchangeOperator::apply_operator(Wavefunction& dwf)
 {
-  //cout << "ExchangeOperator::apply_operator" << endl;
   // apply sigmaHF to s_.wf and store result in dwf
   // use the reference function wf0_ and reference sigma(wf) dwf0_
   apply_VXC_(1.0, wf0_, dwf0_, dwf);
@@ -968,8 +962,6 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
     ComplexMatrix& c = sd.c();
     const int nst = sd.nst();
     ComplexMatrix sample(gcontext_,c.n(),c.n(),c.nb(),c.nb());;
-    //sample.gemm('c','n',1.0,(*s_.proj_wf).sd(0,0)->c(),c,0.0);
-    //sample.print(cout);
     /*
     // if using bisection, localize the wave functions
     if ( use_bisection_ )
@@ -1398,14 +1390,12 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
         }
       }
     }
-    //cout <<" I am safe -1"<<endl;
     // local occupation numbers
     const double* occ = sd.occ_ptr();
     
     for ( int i = 0; i < sd.nstloc(); i++ )  occ_kj_[i]=2.0;
         //occ_kj_[i]=occ[c.jglobal(i)];
        //{occ_kj_[i]=sd.occ(c.jglobal(i));
-       //cout<< sd <<endl;
        //occ_kj_[i]=2.0;
     //}
     // number of states to be sent
@@ -1433,7 +1423,6 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
     // collect number of processed pairs in array load_matrix
     vector<int> load_matrix(gcontext_.npcol()*gcontext_.npcol(),0);
 #endif
-    //cout<<" I am safe 0"<<endl;
     // Start rotation of circulating states
     for ( int iRotationStep = 0; iRotationStep<gcontext_.npcol();
           iRotationStep++ )
@@ -1480,7 +1469,6 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
             // the condition i>=j
             int parity_i = iGlobI & 1;
             int parity_j = iGlobJ & 1;
-            //cout<<"parity_i:\t"<<parity_i<<"parity_j:\t"<<parity_j<<endl;
             if ( parity_i == parity_j )
             {
               if ( iGlobI >= iGlobJ )
@@ -1542,7 +1530,6 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
           i = i + 1;
         }
       }
-      //cout <<"I am safe 1"<<endl;
       // finish sending states in send_buf_states_
       CompleteSendingStates(iRotationStep);
       // send_buf_states_ can now be reused
@@ -1562,9 +1549,7 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
       SetNextPermutationStateNumber();
       // start sending states in send_buf_states_
       StartStatesPermutation(c.mloc());
-      //cout<<"I am safe 2"<<endl;
       // loop over pairs 2 by 2
-      //cout <<"in total:"<<nPair<<endl;
       if ( nPair > 0 )
       {
         double ex_sum_1, ex_sum_2;
@@ -1640,7 +1625,6 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
             // Backtransform rhog[G]/|q+G|^2
             vft_->backward(&rhog1_[0],  &rhor1_[0]);
           }
-          //cout<<" I am safe 3"<<endl;
           // accumulate contributions to the exchange energy
           // first pair: (i1,j1)
           const double fac1 = 0.5 * exfac * occ_ki_[i] * occ_kj_[j];
@@ -1753,7 +1737,6 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
       nStatesKpi_ = nNextStatesKpi_;
     } // iRotationStep
     // end of rotation of the states of kpoint i from this point
-    //cout <<"I am safe 4"<<endl;
 #if LOAD_MATRIX
     // collect load_matrix
     gcontext_.isum('R', load_matrix.size(), 1, &load_matrix[0],
