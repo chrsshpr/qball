@@ -1829,7 +1829,6 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
       for ( int j = 0; j < dc.mloc(); j++ )
          p1[j] = buffer_forces_2_[j] + pf1[j];
     }
-   /* 
     // dc now contains the forces  
    // divergence corrections from long range Coulomb part
   if ( alpha_sx_ != 0.0 )
@@ -1896,7 +1895,6 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
         }
       } // for i
     }
-*/
     // divergence corrections done
  //  if ( use_bisection_ )
   //  {
