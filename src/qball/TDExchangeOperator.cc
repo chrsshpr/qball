@@ -1687,7 +1687,7 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
 #pragma omp parallel for
               for ( int ip = 0; ip < np012loc_; ip+=1 )
               {
-                dstatei_[i][ip] += statej_[j][ip] * rhor1_[ip] * weightj;
+                dstatei_[i][ip] += statej_[j][ip] * conj(rhor1_[ip]) * weightj;
                 dstatej_[j][ip] += statei_[i][ip] * rhor1_[ip] * weighti;
               }
             }
@@ -1829,7 +1829,7 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
       for ( int j = 0; j < dc.mloc(); j++ )
          p1[j] = buffer_forces_2_[j] + pf1[j];
     }
-    
+   /* 
     // dc now contains the forces  
    // divergence corrections from long range Coulomb part
   if ( alpha_sx_ != 0.0 )
@@ -1858,7 +1858,8 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
         sigma_exhf_[5] += ( fac1 * sigma_sumexp[5] ) / omega;
 
         // rcut*rcut divergence correction
-        if ( (gcontext_.mype() == 0) )
+        if (vbasis_->context().mype()==0)
+        //if ( (gcontext_.mype() == 0) )
         {
           const double div_corr_2 = - alpha_sx_ * exfac *
              rcut_ * rcut_ * occ_ki_[i];
@@ -1871,7 +1872,8 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
         }
 
         // analytical part
-        if ( gcontext_.mype() == 0 )
+        if (vbasis_->context().mype()==0)
+        //if ( gcontext_.mype() == 0 )
         {
           const double div_corr_3 = - exfac * integ/vbz * occ_ki_[i];
           div_corr += div_corr_3;
@@ -1894,6 +1896,7 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
         }
       } // for i
     }
+*/
     // divergence corrections done
  //  if ( use_bisection_ )
   //  {
@@ -1901,7 +1904,6 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
    // }
 
   } // for ispin
-
   // sum contributions to the exchange energy
   gcontext_.dsum(1, 1, &exchange_sum, 1);
 
@@ -1971,8 +1973,8 @@ void ExchangeOperator::StartStatesPermutation(int mloc)
   if ( nStatesKpi_>0 )
   {
     wait_send_states_=1;
-    MPI_Isend((void *) &send_buf_states_[0], nStatesKpi_*mloc,
-      MPI_COMPLEX, iSendTo_, Tag_States, comm_, &send_request_States_ );
+    MPI_Isend((void *) &send_buf_states_[0], 2*nStatesKpi_*mloc,
+      MPI_DOUBLE, iSendTo_, Tag_States, comm_, &send_request_States_ );
   }
   else
   {
@@ -1983,8 +1985,8 @@ void ExchangeOperator::StartStatesPermutation(int mloc)
   if ( nNextStatesKpi_>0 )
   {
     wait_recv_states_=1;
-    MPI_Irecv((void *) &state_kpi_[0], nNextStatesKpi_*mloc,
-      MPI_COMPLEX, iRecvFr_, Tag_States, comm_, &recv_request_States_ );
+    MPI_Irecv((void *) &state_kpi_[0], 2*nNextStatesKpi_*mloc,
+      MPI_DOUBLE, iRecvFr_, Tag_States, comm_, &recv_request_States_ );
   }
   else
   {
@@ -2032,8 +2034,8 @@ void ExchangeOperator::StartForcesPermutation(int mloc)
   if ( nStatesKpi_>0 )
   {
     wait_send_forces_=1;
-    MPI_Isend((void *) &send_buf_forces_[0], nStatesKpi_*mloc,
-      MPI_COMPLEX, iSendTo_, Tag_Forces, comm_, &send_request_Forces_ );
+    MPI_Isend((void *) &send_buf_forces_[0],2*nStatesKpi_*mloc,
+      MPI_DOUBLE, iSendTo_, Tag_Forces, comm_, &send_request_Forces_ );
   }
   else
   {
@@ -2044,8 +2046,8 @@ void ExchangeOperator::StartForcesPermutation(int mloc)
   if ( nNextStatesKpi_>0 )
   {
     wait_recv_forces_=1;
-    MPI_Irecv((void *) &force_kpi_[0], nNextStatesKpi_*mloc,
-      MPI_COMPLEX, iRecvFr_, Tag_Forces, comm_, &recv_request_Forces_ );
+    MPI_Irecv((void *) &force_kpi_[0], 2*nNextStatesKpi_*mloc,
+      MPI_DOUBLE, iRecvFr_, Tag_Forces, comm_, &recv_request_Forces_ );
   }
   else
   {
