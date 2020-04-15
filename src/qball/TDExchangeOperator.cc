@@ -36,7 +36,7 @@
 //#include "VectorLess.h"
 
 #include "TDExchangeOperator.h"
-//#include "Bisection.h"
+#include "Bisection.h"
 
 using namespace std;
 
@@ -87,9 +87,9 @@ ExchangeOperator::ExchangeOperator( Sample& s, double alpha_sx,
   np1v_ = vbasis_->np(1)+2;
   np2v_ = vbasis_->np(2)+2;
   while (!vbasis_->factorizable(np0v_)) np0v_ += 2;
-  while (!vbasis_->factorizable(np1v_)) np1v_ += 2;
-  
+  while (!vbasis_->factorizable(np1v_)) np1v_ += 2;  
   while (!vbasis_->factorizable(np2v_)) np2v_ += 2;
+
   if ( gamma_only_ )
   {
     // create Fourier transform object wavefunctions
@@ -182,24 +182,24 @@ ExchangeOperator::ExchangeOperator( Sample& s, double alpha_sx,
     statej_[i].resize(np012loc_);
   }
 
-  //use_bisection_ = s.ctrl.btHF > 0.0;
+  use_bisection_ = s.ctrl.btHF > 0.0;
 
   // if only at gamma
   if ( gamma_only_ )
   {
     tmp_.resize(np012loc_);
     // allocate bisection object
-    //if ( use_bisection_ )
-    //{
-   //   bisection_.resize(s_.wf.nspin());
-   //   uc_.resize(s_.wf.nspin());
-    //  for ( int ispin = 0; ispin < s_.wf.nspin(); ispin++ )
-   //   {
-    //    bisection_[ispin] = new Bisection(*s_.wf.sd(ispin,0),s_.ctrl.blHF);
-    //    const ComplexMatrix& c = s_.wf.sd(ispin,0)->c();
-    //    uc_[ispin] = new DoubleMatrix(c.context(),c.n(),c.n(),c.nb(),c.nb());
-    //  }
-    //}
+    if ( use_bisection_ )
+    {
+      bisection_.resize(s_.wf.nspin());
+      uc_.resize(s_.wf.nspin());
+      for ( int ispin = 0; ispin < s_.wf.nspin(); ispin++ )
+      {
+        bisection_[ispin] = new Bisection(*s_.wf.sd(ispin,0),s_.ctrl.blHF);
+        const ComplexMatrix& c = s_.wf.sd(ispin,0)->c();
+        uc_[ispin] = new DoubleMatrix(c.context(),c.n(),c.n(),c.nb(),c.nb());
+      }
+    }
   }
 
   // allocate memory for occupation numbers of kpoint iKpi
@@ -233,12 +233,12 @@ ExchangeOperator::~ExchangeOperator()
   // delete Fourier transform and basis for pair densities
   delete vft_;
   delete vbasis_;
-  //if ( use_bisection_ )
-  //  for ( int ispin = 0; ispin < s_.wf.nspin(); ispin++ )
-  //  {
-  //    delete bisection_[ispin];
-  //    delete uc_[ispin];
-  //  }
+  if ( use_bisection_ )
+    for ( int ispin = 0; ispin < s_.wf.nspin(); ispin++ )
+    {
+      delete bisection_[ispin];
+      delete uc_[ispin];
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -962,7 +962,7 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
     ComplexMatrix& c = sd.c();
     const int nst = sd.nst();
     ComplexMatrix sample(gcontext_,c.n(),c.n(),c.nb(),c.nb());;
-    /*
+    
     // if using bisection, localize the wave functions
     if ( use_bisection_ )
     {
@@ -1322,7 +1322,7 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
            << tmb.real() << " s" << endl;
       }
     } // if use_bisection_
-*/
+
     tm.start();
 
     // compute exchange
@@ -1457,8 +1457,8 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
             int iGlobJ = c.jglobal(j);
         
             // determine the overlap between those two states
-            //bool overlap_ij = ( !use_bisection_ ||
-            //  bisection_[ispin]->overlap(localization_,iGlobI,iGlobJ) );
+            bool overlap_ij = ( !use_bisection_ ||
+              bisection_[ispin]->overlap(localization_,iGlobI,iGlobJ) );
 
             // use the chess board condition to
             // optimize the distribution of work on
@@ -1879,10 +1879,10 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
       } // for i
     }
     // divergence corrections done
- //  if ( use_bisection_ )
-  //  {
-  //    bisection_[ispin]->backward(*uc_[ispin], *dwf->sd(ispin,0));
-   // }
+   if ( use_bisection_ )
+    {
+      bisection_[ispin]->backward(*uc_[ispin], *dwf->sd(ispin,0));
+    }
 
   } // for ispin
   // sum contributions to the exchange energy
