@@ -42,19 +42,30 @@
 using namespace std;
 
 TDNaturalOrbital::TDNaturalOrbital(const Sample& s):
-s_(s),ref_((*s.proj_wf).sd(0,0)->c()),basis( (*s.proj_wf).sd(0,0)->basis()),ctxt_(ref_.context()),update_((*s.proj_wf).sd(0,0)->c())
+s_(s),ref_((*s.proj_wf).sd(0,0)->c()),basis( (*s.proj_wf).sd(0,0)->basis()),ctxt_(ref_.context()),update_((*s.proj_wf).sd(0,0)->c()),
+nto_coeff((*s.proj_wf).sd(0,0)->c()),elec_coeff((*s.proj_wf).sd(0,0)->c()),hole_coeff((*s.proj_wf).sd(0,0)->c())
 { 
   m = ref_.m();
   n = ref_.n();
   mb= ref_.mb();
   nb= ref_.nb();
-  ComplexMatrix  nto_coeff(ctxt_,m,n,mb,nb);
-  ComplexMatrix  elec_coeff(ctxt_,m,n,mb,nb);
-  ComplexMatrix  hole_coeff(ctxt_,m,n,mb,nb);
+  nto_.resize(n);
+  //valarray<double> nto_(n);
+  //ComplexMatrix  nto_coeff(ctxt_,m,n,mb,nb);
+  //ComplexMatrix  elec_coeff(ctxt_,m,n,mb,nb);
+  //ComplexMatrix  hole_coeff(ctxt_,m,n,mb,nb);
+  
   int np0 = basis.np(0);
   int np1 = basis.np(1);
   int np2 = basis.np(2); 
   ft = new FourierTransform(basis,np0,np1,np2);
+}
+TDNaturalOrbital::~TDNaturalOrbital()
+{
+  //delete nto_coeff;
+  //delete elec_coeff;
+  //delete hole_coeff;
+  delete ft;
 }
 void TDNaturalOrbital::update(const ComplexMatrix& mat)
 {
@@ -62,19 +73,26 @@ void TDNaturalOrbital::update(const ComplexMatrix& mat)
 }
 void TDNaturalOrbital::update_NTO()
 {
-
   ComplexMatrix z(ctxt_,n,n,nb,nb);
   ComplexMatrix ortho(z),tmp(z);
+  
   tmp.gemm('c','n',1.0,ref_,update_,0.0);
   ortho.gemm('c','n',1.0,tmp,tmp,0.0);
-  ortho.heev('l', nto_,z);
-  nto_coeff->gemm('n','n',1.0,update_,z,0.0); 
+  valarray<double> w(n);
+  ortho.heev('l',w,z);
+  if (  ctxt_.oncoutpe() )
+  {
+     for (int ii =0; ii<n; ii++)
+             nto_[ii]=w[ii];
+  }
+  //(*nto_coeff).print(cout);
+  nto_coeff.gemm('n','n',1.0,update_,z,0.0); 
 }
 void TDNaturalOrbital::update_elec()
 {
 
   ComplexMatrix z(ctxt_,n,n,nb,nb);
-  z.gemm('c','n',1.0,ref_,*nto_coeff,0.0);
+  z.gemm('c','n',1.0,ref_,nto_coeff,0.0);
   ComplexMatrix u(z);  
   int nloc = z.nloc();
   int mloc = z.mloc();
@@ -90,16 +108,16 @@ void TDNaturalOrbital::update_elec()
           ptru[ii] = occ* ptrz[ii];
       }
   }
-  elec_coeff->gemm('n','n',1.0,ref_,u,0.0);
+  elec_coeff.gemm('n','n',1.0,ref_,u,0.0);
 }
 void TDNaturalOrbital::update_hole()
 {
    for (int in = 0; in < nb; in++)
    {
-      int ist = nto_coeff->jglobal(in);
+      int ist = nto_coeff.jglobal(in);
       double occ = pow(nto(ist),0.5);
       double hole = pow(1-nto(ist),0.5);
-      std::complex<double> *ptrnto = nto_coeff->valptr(in*mb),*ptrelec = elec_coeff->valptr(in*mb),*ptrhole = hole_coeff->valptr(in*mb);
+      std::complex<double> *ptrnto = nto_coeff.valptr(in*mb),*ptrelec = elec_coeff.valptr(in*mb),*ptrhole = hole_coeff.valptr(in*mb);
       for (int ii =0; ii<mb; ii++)
       {
             ptrhole[ii]= (ptrnto[ii]-occ*ptrelec[ii])/hole; 
@@ -110,8 +128,8 @@ void TDNaturalOrbital::print_hole_orbital(int m,string filename)
 {
    vector<complex<double>> wftmp(ft->np012());
    vector<double> wftmpr(ft->np012());
-   int nloc = hole_coeff->y(m);
-   ft->backward(hole_coeff->cvalptr(mb*nloc),&wftmp[0]);
+   int nloc = hole_coeff.y(m);
+   ft->backward(hole_coeff.valptr(mb*nloc),&wftmp[0]);
    double *a = (double*) &wftmp[0];
    for ( int i = 0; i < ft->np012loc(); i++ ) 
           wftmpr[i] = sqrt(a[2*i]*a[2*i] + a[2*i+1]*a[2*i+1]);
@@ -123,8 +141,8 @@ void TDNaturalOrbital::print_elec_orbital(int m,string filename)
 {
    vector<complex<double>> wftmp(ft->np012());
    vector<double> wftmpr(ft->np012());
-   int nloc = elec_coeff->y(m);
-   ft->backward(elec_coeff->cvalptr(mb*nloc),&wftmp[0]);
+   int nloc = elec_coeff.y(m);
+   ft->backward(elec_coeff.cvalptr(mb*nloc),&wftmp[0]);
    double *a = (double*) &wftmp[0];
    for ( int i = 0; i < ft->np012loc(); i++ )
           wftmpr[i] = sqrt(a[2*i]*a[2*i] + a[2*i+1]*a[2*i+1]);
@@ -136,8 +154,8 @@ void TDNaturalOrbital::print_nto_orbital(int m,string filename)
 {
    vector<complex<double>> wftmp(ft->np012());
    vector<double> wftmpr(ft->np012());
-   int nloc = nto_coeff->y(m);
-   ft->backward(nto_coeff->cvalptr(mb*nloc),&wftmp[0]);
+   int nloc = nto_coeff.y(m);
+   ft->backward(nto_coeff.cvalptr(mb*nloc),&wftmp[0]);
    double *a = (double*) &wftmp[0];
    for ( int i = 0; i < ft->np012loc(); i++ )
           wftmpr[i] = sqrt(a[2*i]*a[2*i] + a[2*i+1]*a[2*i+1]);
@@ -240,4 +258,4 @@ void TDNaturalOrbital::print_orbital(double * wftmp,string filename)
                  os.close();
             }
      }
-}          
+}  

@@ -47,9 +47,9 @@ class TDNaturalOrbital
   int np0,np1,np2;
   valarray<double> nto_; 
   ComplexMatrix& update_;
-  ComplexMatrix* nto_coeff;
-  ComplexMatrix* hole_coeff;
-  ComplexMatrix* elec_coeff; 
+  ComplexMatrix nto_coeff;
+  ComplexMatrix hole_coeff;
+  ComplexMatrix elec_coeff; 
   FourierTransform* ft;
 
   public:

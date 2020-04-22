@@ -46,6 +46,7 @@
 #include "SDCellStepper.h"
 #include "MLWFTransform.h"
 #include "TDMLWFTransform.h"
+#include "TDNaturalOrbital.h"
 #include "SimpleConvergenceDetector.h"
 #include "Hugoniostat.h"
 #include "PrintMem.h"
@@ -281,6 +282,12 @@ void EhrenSampleStepper::step(int niter)
   QB_Pstart(14,scfloop);
 #endif
   tmap["total_niter"].start();
+  bool compute_natural_orbital = s_.ctrl.natural_orbital;
+  TDNaturalOrbital * tdnto;
+  if (compute_natural_orbital)
+  { 
+      tdnto=new TDNaturalOrbital(s_);
+  }
   for ( int iter = 0; iter < niter; iter++ )
   {
 
@@ -1224,7 +1231,24 @@ void EhrenSampleStepper::step(int niter)
        s_.previous_wf = new Wavefunction(s_.wf);
        (*s_.previous_wf) = s_.wf;
     }
-
+    if ( compute_natural_orbital)
+    {
+         SlaterDet& sd = *(wf.sd(0,0));
+         tdnto->update(wf.sd(0,0)->c());
+         tdnto->update_NTO();
+         if ( oncoutpe )
+         {
+            cout << " <nto_set size=\"" << sd.nst() << "\">" << endl;
+            for ( int i = 0; i < sd.nst(); i++ )
+            {
+                cout.setf(ios::fixed, ios::floatfield);
+                cout.setf(ios::right, ios::adjustfield);
+                cout << "   <occupancy=\"" << setprecision(6)
+                     << setw(12) << tdnto->nto(i) << " \"/>"<<endl;
+            }
+            cout << " </nto_set>" << endl;
+         }
+    }
     if ( compute_mlwf )
     {
        SlaterDet& sd = *(wf.sd(0,0));
