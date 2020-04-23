@@ -42,7 +42,7 @@ class SaveNTOFreq : public Var
 
   public:
 
-  char const*name ( void ) const { return "saveholefreq"; };
+  char const*name ( void ) const { return "saventofreq"; };
 
   int set ( int argc, char **argv )
   {
