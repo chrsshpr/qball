@@ -46,7 +46,7 @@ class TDNaturalOrbital
   int n,nb,m,mb;
   int np0,np1,np2;
   valarray<double> nto_; 
-  ComplexMatrix& update_;
+  ComplexMatrix update_;
   ComplexMatrix nto_coeff;
   ComplexMatrix hole_coeff;
   ComplexMatrix elec_coeff; 

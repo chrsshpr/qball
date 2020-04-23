@@ -1248,6 +1248,43 @@ void EhrenSampleStepper::step(int niter)
             }
             cout << " </nto_set>" << endl;
          }
+         if (s_.ctrl.saventofreq>0 || s_.ctrl.saveholefreq>0 || s_.ctrl.saveelecfreq>0)
+         { 
+            bool print_hole =(s_.ctrl.mditer%s_.ctrl.saveholefreq == 0 && s_.ctrl.saveelecfreq>0); 
+            bool print_elec =(s_.ctrl.mditer%s_.ctrl.saveelecfreq == 0 && s_.ctrl.saveelecfreq>0);
+            bool print_NTO =(s_.ctrl.mditer%s_.ctrl.saventofreq == 0 && s_.ctrl.saventofreq>0);
+            if (print_NTO||print_elec||print_hole)
+            {
+               tdnto->update_NTO();
+               if (print_elec||print_hole)
+               {
+                     tdnto->update_elec();
+                     if (print_hole)
+                       tdnto->update_hole();
+               }
+             } 
+             if (print_NTO) 
+             {
+                ostringstream oss;
+                oss.width(7);  oss.fill('0');  oss << s_.ctrl.mditer; 
+                string denfilename = s_.ctrl.saventofilebase + "." + oss.str() + ".cube";
+                tdnto->print_nto_orbital(s_.ctrl.ntoindex,denfilename);
+             }
+             if (print_elec)
+             {
+                ostringstream oss;
+                oss.width(7);  oss.fill('0');  oss << s_.ctrl.mditer;
+                string denfilename = s_.ctrl.saveelecfilebase + "." + oss.str() + ".cube";
+                tdnto->print_elec_orbital(s_.ctrl.elecindex,denfilename);
+             }
+             if (print_hole)
+             {
+                ostringstream oss;
+                oss.width(7);  oss.fill('0');  oss << s_.ctrl.mditer;
+                string denfilename = s_.ctrl.saveholefilebase + "." + oss.str() + ".cube";
+                tdnto->print_hole_orbital(s_.ctrl.holeindex,denfilename);
+             }
+         }
     }
     if ( compute_mlwf )
     {

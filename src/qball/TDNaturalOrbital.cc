@@ -55,9 +55,9 @@ nto_coeff((*s.proj_wf).sd(0,0)->c()),elec_coeff((*s.proj_wf).sd(0,0)->c()),hole_
   //ComplexMatrix  elec_coeff(ctxt_,m,n,mb,nb);
   //ComplexMatrix  hole_coeff(ctxt_,m,n,mb,nb);
   
-  int np0 = basis.np(0);
-  int np1 = basis.np(1);
-  int np2 = basis.np(2); 
+  np0 = basis.np(0);
+  np1 = basis.np(1);
+  np2 = basis.np(2); 
   ft = new FourierTransform(basis,np0,np1,np2);
 }
 TDNaturalOrbital::~TDNaturalOrbital()
@@ -78,13 +78,7 @@ void TDNaturalOrbital::update_NTO()
   
   tmp.gemm('c','n',1.0,ref_,update_,0.0);
   ortho.gemm('c','n',1.0,tmp,tmp,0.0);
-  valarray<double> w(n);
-  ortho.heev('l',w,z);
-  if (  ctxt_.oncoutpe() )
-  {
-     for (int ii =0; ii<n; ii++)
-             nto_[ii]=w[ii];
-  }
+  ortho.heev('l',nto_,z);
   //(*nto_coeff).print(cout);
   nto_coeff.gemm('n','n',1.0,update_,z,0.0); 
 }
@@ -208,10 +202,10 @@ void TDNaturalOrbital::print_orbital(double * wftmp,string filename)
                     tmpr[i] = wftmp[i];
                 }
                 ofstream os;
-                ostringstream oss;
-                oss.width(7);  
-                oss.fill('0');  
-                oss << endl;
+                //ostringstream oss;
+                //oss.width(7);  
+                //oss.fill('0');  
+                //oss << endl;
                 os.open(filename);
                 os <<endl;
                 os << endl;
