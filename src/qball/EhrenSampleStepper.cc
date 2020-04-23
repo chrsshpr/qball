@@ -1250,7 +1250,7 @@ void EhrenSampleStepper::step(int niter)
          }
          if (s_.ctrl.saventofreq>0 || s_.ctrl.saveholefreq>0 || s_.ctrl.saveelecfreq>0)
          { 
-            bool print_hole =(s_.ctrl.mditer%s_.ctrl.saveholefreq == 0 && s_.ctrl.saveelecfreq>0); 
+            bool print_hole =(s_.ctrl.mditer%s_.ctrl.saveholefreq == 0 && s_.ctrl.saveholefreq>0); 
             bool print_elec =(s_.ctrl.mditer%s_.ctrl.saveelecfreq == 0 && s_.ctrl.saveelecfreq>0);
             bool print_NTO =(s_.ctrl.mditer%s_.ctrl.saventofreq == 0 && s_.ctrl.saventofreq>0);
             if (print_NTO||print_elec||print_hole)

@@ -87,32 +87,33 @@ void TDNaturalOrbital::update_elec()
 
   ComplexMatrix z(ctxt_,n,n,nb,nb);
   z.gemm('c','n',1.0,ref_,nto_coeff,0.0);
-  ComplexMatrix u(z);  
-  int nloc = z.nloc();
-  int mloc = z.mloc();
+  elec_coeff.gemm('n','n',1.0,ref_,z,0.0);
+  int nloc = elec_coeff.nloc();
+  int mloc = elec_coeff.mloc();
   
 
   for (int in = 0; in < nloc; in++)
   {
-      int ist = z.jglobal(in);
-      double occ = pow(nto(ist),-0.5);
-      std::complex<double> *ptrz = &z[in*mloc],*ptru = &u[in*mloc];
-      for (int ii =0; ii<mloc; ii++)
+      int ist = elec_coeff.jglobal(in);
+      double occ = 1.0/nto(ist);
+      std::complex<double> *ptrz = &elec_coeff[in*mb];
+      for (int ii =0; ii< mloc; ii++)
       {
-          ptru[ii] = occ* ptrz[ii];
+          ptrz[ii] *= occ;
       }
   }
-  elec_coeff.gemm('n','n',1.0,ref_,u,0.0);
 }
 void TDNaturalOrbital::update_hole()
 {
-   for (int in = 0; in < nb; in++)
+   int nloc = hole_coeff.nloc();
+   int mloc = hole_coeff.mloc();
+   for (int in = 0; in < nloc; in++)
    {
       int ist = nto_coeff.jglobal(in);
       double occ = pow(nto(ist),0.5);
       double hole = pow(1-nto(ist),0.5);
       std::complex<double> *ptrnto = nto_coeff.valptr(in*mb),*ptrelec = elec_coeff.valptr(in*mb),*ptrhole = hole_coeff.valptr(in*mb);
-      for (int ii =0; ii<mb; ii++)
+      for (int ii =0; ii<mloc; ii++)
       {
             ptrhole[ii]= (ptrnto[ii]-occ*ptrelec[ii])/hole; 
       }
