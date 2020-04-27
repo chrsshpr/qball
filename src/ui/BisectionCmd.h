@@ -50,7 +50,7 @@ class BisectionCmd : public Cmd
   {
     if ( argc != 5 )
     {
-      if ( ui->onpe0() )
+      //if ( ui->onpe0() )
       {
         cout << " use: bisection lx ly lz threshold" << endl;
       }
@@ -68,7 +68,7 @@ class BisectionCmd : public Cmd
 
     if ( epsilon < 0.0 )
     {
-      if ( ui->onpe0() )
+      //if ( ui->onpe0() )
       {
         cout << " BisectionCmd: threshold must be non-negative" << endl;
       }
@@ -77,7 +77,7 @@ class BisectionCmd : public Cmd
 
     if ( wf.nkp() > 1 )
     {
-      if ( ui->onpe0() )
+      //if ( ui->onpe0() )
       {
         cout << " BisectionCmd: only implemented for k=0" << endl;
       }
@@ -88,7 +88,7 @@ class BisectionCmd : public Cmd
          nLevels[1] < 0 || nLevels[1] > 5 ||
          nLevels[2] < 0 || nLevels[2] > 5 )
     {
-      if ( ui->onpe0() )
+      //if ( ui->onpe0() )
       {
         cout << " BisectionCmd: levels must be in [0,5]" << endl;
       }
@@ -109,7 +109,7 @@ class BisectionCmd : public Cmd
       tm.stop();
       vector<long int> localization = bisection.localization();
 
-      if ( ui->onpe0() )
+      //if ( ui->onpe0() )
       {
         cout << " BisectionCmd: lx=" << nLevels[0]
              << " ly=" << nLevels[1]
@@ -140,7 +140,7 @@ class BisectionCmd : public Cmd
              << ": " << bisection.pair_fraction() << endl;
       }
     }
-    if ( ui->onpe0() )
+    //if ( ui->onpe0() )
       cout << " Bisection: time=" << tm.real() << endl;
     return 0;
   }

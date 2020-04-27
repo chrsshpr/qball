@@ -96,6 +96,7 @@ using namespace std;
 #include <ui/ListConstraintsCmd.h>
 #include <ui/PlotCmd.h>
 #include <ui/CoordinatesCmd.h>
+#include <ui/BisectionCmd.h>
 
 #include <vars/AtomsDyn.h>
 #include <vars/Cell.h>
@@ -181,6 +182,8 @@ using namespace std;
 #include <vars/VectorPotentialDynamics.h>
 #include <vars/VectorPotentialVar.h>
 #include <vars/VdW.h>
+#include <vars/BlHF.h>
+#include <vars/BtHF.h>
 
 #ifdef HAVE_BGQLIBS
 #include <spi/include/kernel/process.h>
@@ -365,8 +368,11 @@ int main(int argc, char **argv, char **envp)
   ui->addCmd(new PlotCmd(s));
   ui->addCmd(new ResetVcmCmd(s));
   ui->addCmd(new CoordinatesCmd(s));
+  ui->addCmd(new BisectionCmd(s));
 
   ui->addVar(new AtomsDyn(s));
+  ui->addVar(new BlHF(s));
+  ui->addVar(new BtHF(s));
   ui->addVar(new Cell(s));
   ui->addVar(new CellDyn(s));
   ui->addVar(new CellLock(s));

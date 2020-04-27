@@ -158,10 +158,12 @@ struct Control
   string saveholefilebase,saveelecfilebase;
   D3vector sine_field;
   bool  compute_sine_field ;
-
+  int blHF[3];
+  double btHF;
+  double hf;
 };
 #endif
 
 // Local Variables:
 // mode: c++
-// End:
+// End

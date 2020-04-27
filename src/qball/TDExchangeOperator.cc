@@ -33,7 +33,7 @@
 #include <iomanip>
 #include <bitset>
 #include <algorithm>
-//#include "VectorLess.h"
+#include "VectorLess.h"
 
 #include "TDExchangeOperator.h"
 #include "Bisection.h"

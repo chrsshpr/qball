@@ -15,6 +15,7 @@ noinst_HEADERS =                            \
 	AngleConstraint.h                   \
 	Atom.h                              \
 	AtomSet.h                           \
+	Bisection.h 	                    \
 	Base64Transcoder.h                  \
 	Basis.h                             \
 	BasisMapping.h                      \
@@ -191,6 +192,7 @@ libqbLink_a_SOURCES =                        \
 	TDEULERWavefunctionStepper.cc        \
 	EhrenSampleStepper.cc                \
 	FCPStepper.cc                        \
+	Bisection.cc 			     \
 	ExponentialWavefunctionStepper.cc    \
 	SelfConsistentPotential.cc           \
 	clooper.c                            \

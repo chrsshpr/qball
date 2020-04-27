@@ -296,6 +296,12 @@ class DoubleMatrix
     // compute eigenvalues (only) of symmetric matrix *this
     // using the divide and conquer method of Tisseur and Dongarra
     void syevd(char uplo, valarray<double>& w);
+
+    // permute the coeff of the matrix *this
+    void lapiv(char direc, char rowcol, const int *ipiv);
+    // signature of a permutation returned by lu
+    int signature(std::valarray<int> ipiv);
+
 };
 ostream& operator << ( ostream& os, const DoubleMatrix& a );
 
@@ -569,6 +575,11 @@ class ComplexMatrix
     void hegv(char uplo, valarray<double>& w);
     // compute eigenvalues (only) of hermitian matrix *this, using divide-and-conquer
     void heevd(char uplo, valarray<double>& w);
+    // permute the coeff of the matrix *this
+    void lapiv(char direc, char rowcol, const int *ipiv);
+    // signature of a permutation returned by lu
+    int signature(std::valarray<int> ipiv);
+
 };
 ostream& operator << ( ostream& os, const ComplexMatrix& a );
 #endif
