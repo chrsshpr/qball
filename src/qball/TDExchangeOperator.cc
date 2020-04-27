@@ -51,8 +51,6 @@ ExchangeOperator::ExchangeOperator( Sample& s, double alpha_sx,
   double beta_sx, double mu_sx ) :
   s_(s), wf0_(s.wf), dwf0_(s.wf),wfc_(s.wf),
   alpha_sx_(alpha_sx), beta_sx_(beta_sx), mu_sx_(mu_sx),
-  //gcontext_(s_.wf.sd(0,0)->basis().context())
-  //  //gcontext_(s.ctxt_)
   gcontext_(s.wf.sd(0,0)->context())
 {
   // check validity of the values of alpha_sx, beta_sx, mu_sx
@@ -66,8 +64,7 @@ ExchangeOperator::ExchangeOperator( Sample& s, double alpha_sx,
   sigma_exhf_.resize(6);
 
   // column communicator
-  comm_ = s_.wf.sd(0,0)->basis().context().comm();
-  //comm_ = gcontext_.comm();
+  vcomm_ = s_.wf.sd(0,0)->basis().context().comm();
   // check if the only kpoint is the gamma point:
   gamma_only_ = ( s_.wf.nkp()==1 ) ;
   //if ( gamma_only_ )
@@ -1395,6 +1392,7 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
     }
     // local occupation numbers
     const double* occ = sd.occ_ptr();
+    
     for ( int i = 0; i < sd.nstloc(); i++ )  occ_kj_[i]=2.0;
         //occ_kj_[i]=occ[c.jglobal(i)];
        //{occ_kj_[i]=sd.occ(c.jglobal(i));
@@ -1420,6 +1418,7 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
     }
     // initiate send nStatesKpi_ and receive nNextStatesKpi_
     InitPermutation();
+
 #if LOAD_MATRIX
     // collect number of processed pairs in array load_matrix
     vector<int> load_matrix(gcontext_.npcol()*gcontext_.npcol(),0);
@@ -1500,7 +1499,7 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
         }
       }
       // pair list is complete
-      //cout<<"This is "<< gcontext_.myrow()<<"\t" << gcontext_.mycol()<<endl;
+
 #if LOAD_MATRIX
       // collect nPair statistics if on row 0
       if ( gcontext_.myrow() == 0 )
@@ -1511,6 +1510,7 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
       // note: this does nothing if iRotationStep == 0
       CompleteReceivingStates(iRotationStep);
       // circulating states in state_kpi_[i+j*mloc] can now be used
+
       // compute real space circulating states
       if ( nPair > 0 )
       {
@@ -1544,13 +1544,11 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
           for ( int j = 0; j < np012loc_; j++ )
             dstatei_[i][j] = 0.0;
       }
-      //cout<<"This is "<< gcontext_.myrow()<<"\t" << gcontext_.mycol()<<endl;
 
       // nNextStatesKpi: number of states of next permutation step
       SetNextPermutationStateNumber();
       // start sending states in send_buf_states_
       StartStatesPermutation(c.mloc());
-      //
       // loop over pairs 2 by 2
       if ( nPair > 0 )
       {
@@ -1683,7 +1681,6 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
 
       } // if nPair > 0
       // End of loop over pairs
-
       if (dwf)
       {
         // finish receiving forces in force_kpi_[]
@@ -1738,12 +1735,9 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
       
       // set the new number of local states
       nStatesKpi_ = nNextStatesKpi_;
-      //cout<<"Step 3: "<< gcontext_.myrow()<<"\t" << gcontext_.mycol()<<endl;
-
     } // iRotationStep
     // end of rotation of the states of kpoint i from this point
 #if LOAD_MATRIX
-
     // collect load_matrix
     gcontext_.isum('R', load_matrix.size(), 1, &load_matrix[0],
                    load_matrix.size());
@@ -1796,6 +1790,7 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
     CompleteSendingStates(1);
     CompleteReceivingOccupations(1);
     CompleteSendingOccupations(1);
+
     if (dwf)
     {
       // complete forces permutation
@@ -1819,7 +1814,7 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
     }
     // dc now contains the forces  
    // divergence corrections from long range Coulomb part
-if ( alpha_sx_ != 0.0 )
+  if ( alpha_sx_ != 0.0 )
     {
       const double integ = alpha_sx_ * 4.0 * M_PI * sqrt(M_PI) /
         ( 2.0 * rcut_ );
@@ -1859,8 +1854,7 @@ if ( alpha_sx_ != 0.0 )
         }
 
         // analytical part
-        if (vbasis_->context().myrow()==0)
-        //if (vbasis_->context().mype()==0)
+        if (vbasis_->context().mype()==0)
         //if ( gcontext_.mype() == 0 )
         {
           const double div_corr_3 = - exfac * integ/vbz * occ_ki_[i];
@@ -1892,9 +1886,8 @@ if ( alpha_sx_ != 0.0 )
 
   } // for ispin
   // sum contributions to the exchange energy
-  //vbasis_->context().dsum(1, 1, &exchange_sum, 1);
-
   gcontext_.dsum(1, 1, &exchange_sum, 1);
+
   // accumulate stress tensor contributions
   if ( compute_stress )
     gcontext_.dsum(6,1,&sigma_exhf_[0],6);
@@ -1913,13 +1906,12 @@ void ExchangeOperator::InitPermutation(void)
                gcontext_.mycol() + 1 : 0;
   colRecvFr_ = ( gcontext_.mycol() > 0 ) ?
                gcontext_.mycol() - 1 : gcontext_.npcol() - 1;
-  //iSendTo_ = s_.ctxt_.pmap( gcontext_.mype(), colSendTo_);
-  //iRecvFr_ = s_.ctxt_.pmap( gcontext_.mype(), colRecvFr_);
-  iSendTo_ = gcontext_.pmap( vbasis_->context().myrow(), colSendTo_);
-  iRecvFr_ = gcontext_.pmap( vbasis_->context().myrow(), colRecvFr_);
+  iSendTo_ = gcontext_.pmap( gcontext_.mype(), colSendTo_);
+  iRecvFr_ = gcontext_.pmap( gcontext_.mype(), colRecvFr_);
+
   // Get communicator for this context
-  //comm_ =  s_.ctxt_.comm();
-  comm_ =  gcontext_.comm();
+  comm_ = gcontext_.comm();
+
   // Init communication for the number of states
   MPI_Send_init((void *) &nStatesKpi_, 1, MPI_INT,
     iSendTo_, Tag_NumberOfStates, comm_, &send_request_NumberOfStates_ );
@@ -1948,7 +1940,6 @@ void ExchangeOperator::SetNextPermutationStateNumber(void)
   {
     MPI_Status status_recv;
     MPI_Status status_send;
-    //cout<<"I am here"<< gcontext_.mype()<< "\t"<< colSendTo_<<endl;
     MPI_Wait( &recv_request_NumberOfStates_, &status_recv);
     MPI_Wait( &send_request_NumberOfStates_, &status_send);
   }
@@ -1990,7 +1981,7 @@ void ExchangeOperator::CompleteReceivingStates(int iRotationStep)
   // do something only if iRotationStep>0
   if ( iRotationStep != 0 && wait_recv_states_ )
   {
-    /// wait for the reception
+    // wait for the reception
     MPI_Status status;
     MPI_Wait( &recv_request_States_, &status);
 
