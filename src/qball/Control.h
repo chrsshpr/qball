@@ -153,11 +153,13 @@ struct Control
   D3vector initial_vector_potential;
   double laser_freq;
   D3vector laser_amp;
-  int saveholefreq,saveelecfreq;
-  int holeindex,elecindex;
-  string saveholefilebase,saveelecfilebase;
+  int saveholefreq,saveelecfreq,saveNOfreq;
+  int holeindex,elecindex,NOindex;
+  string saveholefilebase,saveelecfilebase,saveNOfilebase;
+
   D3vector sine_field;
   bool  compute_sine_field ;
+  double hf;
 
 };
 #endif
