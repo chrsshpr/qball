@@ -159,6 +159,8 @@ struct Control
 
   D3vector sine_field;
   bool  compute_sine_field ;
+  int blHF[3];
+  double btHF;
   double hf;
 
 };
@@ -166,4 +168,4 @@ struct Control
 
 // Local Variables:
 // mode: c++
-// End:
+// End

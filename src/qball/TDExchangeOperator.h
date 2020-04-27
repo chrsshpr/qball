@@ -23,7 +23,7 @@
 #ifndef TDEXCHANGEOPERATOR_H
 #define TDEXCHANGEOPERATOR_H
 
-//class Bisection;
+class Bisection;
 class ExchangeOperator
 {
   private:
@@ -164,10 +164,10 @@ class ExchangeOperator
   void CompleteSendingOccupations(int iRotationStep);
 
   // bisection
-  //bool use_bisection_;
-  //vector<Bisection*> bisection_;
-  //vector<DoubleMatrix*> uc_;
-  //vector<long int> localization_;
+  bool use_bisection_;
+  vector<Bisection*> bisection_;
+  vector<DoubleMatrix*> uc_;
+  vector<long int> localization_;
 
   // screened interaction potential paramters
   double alpha_sx_, beta_sx_, mu_sx_;

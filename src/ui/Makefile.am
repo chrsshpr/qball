@@ -7,6 +7,7 @@ noinst_HEADERS =                            \
 	AngleCmd.h                          \
 	ApplyElectricFieldPulseCmd.h        \
 	AtomCmd.h                           \
+        BisectionCmd.h                      \
 	ComputeMLWFCmd.h                    \
 	ConstraintCmd.h                     \
 	CoordinatesCmd.h                    \

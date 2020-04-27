@@ -89,6 +89,10 @@ using namespace std;
 #define pdgetri    FC_FUNC(pdgetri, PDGETRI)
 #define pzgetrf    FC_FUNC(pzgetrf, PZGETRF)
 #define pzgetri    FC_FUNC(pzgetri, PZGETRI)
+#define pdlapiv    FC_FUNC(pdlapiv, PDLAPIV)
+#define pzlapiv    FC_FUNC(pzlapiv, PZLAPIV)
+#define pdlapv2    FC_FUNC(pdlapv2, PDLAPV2)
+#define pzlapv2    FC_FUNC(pzlapv2, PZLAPV2)
 
 #define dscal      FC_FUNC(dscal, DSCAL)
 #define zscal      FC_FUNC(zscal, ZSCAL)
@@ -287,6 +291,23 @@ extern "C"
   void pzgetri(const int* n, complex<double>* val, 
                const int* ia, const int* ja, int* desca, int* ipiv, 
                complex<double>* work, int* lwork, int* iwork, int* liwork, int* info);
+  void pdlapiv(const char* direc, const char* rowcol, const char* pivroc,
+               const int* m, const int* n, double *a, const int* ia,
+               const int* ja, const int* desca, int* ipiv, const int* ip,
+               const int* jp, const int* descp, int* iwork);
+  void pzlapiv(const char* direc, const char* rowcol, const char* pivroc,
+               const int* m, const int* n, complex<double> *a, const int* ia,
+               const int* ja, const int* desca, int* ipiv, const int* ip,
+               const int* jp, const int* descp, int* iwork);
+  void pdlapv2(const char* direc, const char *rowcol,
+               const int* m, const int *n, double *val,
+               const int *ia, const int *ja, const int* desca,
+               int *ipiv, const int *ip, const int *jp, const int *descp);
+  void pzlapv2(const char* direc, const char *rowcol,
+               const int* m, const int *n, complex<double> *val,
+               const int *ia, const int *ja, const int* desca,
+               int *ipiv, const int *ip, const int *jp, const int *descp);
+
 #endif
   // BLAS1
   void dscal(const int*, const double*, double*, const int*);
@@ -3555,6 +3576,136 @@ void ComplexMatrix::heev(char uplo, valarray<double>& w)
     delete[] rwork;
   }
 }
+
+#if SCALAPACK
+////////////////////////////////////////////////////////////////////////////////
+void DoubleMatrix::lapiv(char direc, char rowcol, const int *ipiv)
+{
+  // Perform a permutation of rows or columns of *this
+  //
+  // Permutation of rows: (rowcol='R' or 'r')
+  // the array ipiv is distributed over a process column
+  // and is replicated on all process columns
+  // ipiv has size mloc and contains the local values of the permutation
+  //
+  // Permutation of columns: (rowcol='C' or 'c')
+  // the array ipiv is distributed over a process row
+  // and is replicated on all process rows
+  // ipiv has size nloc and contains the local values of the permutation
+
+  const bool rowcol_r = ( rowcol=='R' || rowcol=='r' );
+  const bool rowcol_c = ( rowcol=='C' || rowcol=='c' );
+  assert(rowcol_r || rowcol_c);
+
+  // ipivtmp: extended permutation array for use in pdlapv2
+  // (see scalapack documentation)
+  vector<int> ipivtmp;
+  // descriptor of the ipivtmp distributed vector
+  int desc_ip[9];
+  if ( rowcol_r )
+  {
+    // permuting rows
+    ipivtmp.resize(mloc_ + mb_);
+    for ( int i = 0; i < mloc_; i++)
+      ipivtmp[i] = ipiv[i];
+    // initialize descriptor: ipivtmp is (mx1)
+    desc_ip[0] = 1;     // dtype
+    desc_ip[1] = ictxt_;// ctxt
+    desc_ip[2] = m_+mb_*nprow_; // m (see details in pldapv2.f)
+    desc_ip[3] = 1;     // n
+    desc_ip[4] = mb_;   // mb
+    desc_ip[5] = 1;     // nb
+    desc_ip[6] = 0;     // rsrc
+    desc_ip[7] = 0;     // csrc
+    desc_ip[8] = mloc_; // lld
+  }
+  else
+  {
+    // permuting columns
+    ipivtmp.resize(nloc_ + nb_);
+    for ( int i = 0; i < nloc_; i++)
+      ipivtmp[i] = ipiv[i];
+    // initialize descriptor: ipivtmp is (1xn)
+    desc_ip[0] = 1;     // dtype
+    desc_ip[1] = ictxt_;// ctxt
+    desc_ip[2] = 1;     // m
+    desc_ip[3] = n_+nb_*npcol_; // n (see details in pdlapv2.f)
+    desc_ip[4] = 1;     // mb
+    desc_ip[5] = nb_;   // nb
+    desc_ip[6] = 0;     // rsrc
+    desc_ip[7] = 0;     // csrc
+    desc_ip[8] = 1;     // lld
+  }
+
+  int one = 1;
+  pdlapv2(&direc, &rowcol, &m_, &n_, val, &one, &one, desc_,
+          &ipivtmp[0], &one, &one, desc_ip);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void ComplexMatrix::lapiv(char direc, char rowcol, const int *ipiv)
+{
+  // Perform a permutation of rows or columns of *this
+  //
+  // Permutation of rows: (rowcol='R' or 'r')
+  // the array ipiv is distributed over a process column
+  // and is replicated on all process columns
+  // ipiv has size mloc and contains the local values of the permutation
+  //
+  // Permutation of columns: (rowcol='C' or 'c')
+  // the array ipiv is distributed over a process row
+  // and is replicated on all process rows
+  // ipiv has size nloc and contains the local values of the permutation
+
+  const bool rowcol_r = ( rowcol=='R' || rowcol=='r' );
+  const bool rowcol_c = ( rowcol=='C' || rowcol=='c' );
+  assert(rowcol_r || rowcol_c);
+
+  // ipivtmp: extended permutation array for use in pdlapv2
+  // (see scalapack documentation)
+  vector<int> ipivtmp;
+  // descriptor of the ipivtmp distributed vector
+  int desc_ip[9];
+  if ( rowcol_r )
+  {
+    // permuting rows
+    ipivtmp.resize(mloc_ + mb_);
+    for ( int i = 0; i < mloc_; i++)
+      ipivtmp[i] = ipiv[i];
+    // initialize descriptor: ipivtmp is (mx1)
+    desc_ip[0] = 1;     // dtype
+    desc_ip[1] = ictxt_;// ctxt
+    desc_ip[2] = m_+mb_*nprow_; // m (see details in pldapv2.f)
+    desc_ip[3] = 1;     // n
+    desc_ip[4] = mb_;   // mb
+    desc_ip[5] = 1;     // nb
+    desc_ip[6] = 0;     // rsrc
+    desc_ip[7] = 0;     // csrc
+    desc_ip[8] = mloc_; // lld
+  }
+  else
+  {
+    // permuting columns
+    ipivtmp.resize(nloc_ + nb_);
+    for ( int i = 0; i < nloc_; i++)
+      ipivtmp[i] = ipiv[i];
+    // initialize descriptor: ipivtmp is (1x(n+nb))
+    desc_ip[0] = 1;     // dtype
+    desc_ip[1] = ictxt_;// ctxt
+    desc_ip[2] = 1;     // m
+    desc_ip[3] = n_+nb_*npcol_; // n (see details in pdlapv2.f)
+    desc_ip[4] = 1;     // mb
+    desc_ip[5] = nb_;   // nb
+    desc_ip[6] = 0;     // rsrc
+    desc_ip[7] = 0;     // csrc
+    desc_ip[8] = 1;     // lld
+  }
+
+  int one = 1;
+  pzlapv2(&direc, &rowcol, &m_, &n_, val, &one, &one, desc_,
+          &ipivtmp[0], &one, &one, desc_ip);
+}
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 void DoubleMatrix::print(ostream& os) const
