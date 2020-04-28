@@ -52,7 +52,7 @@ ExchangeOperator::ExchangeOperator( Sample& s, double alpha_sx,
   s_(s), wf0_(s.wf), dwf0_(s.wf),wfc_(s.wf),
   alpha_sx_(alpha_sx), beta_sx_(beta_sx), mu_sx_(mu_sx),
   //gcontext_(s_.wf.sd(0,0)->basis().context())
-  //  //gcontext_(s.ctxt_)
+  //gcontext_(s.ctxt_)
   gcontext_(s.wf.sd(0,0)->context())
 {
   // check validity of the values of alpha_sx, beta_sx, mu_sx
@@ -90,9 +90,9 @@ ExchangeOperator::ExchangeOperator( Sample& s, double alpha_sx,
   np1v_ = vbasis_->np(1)+2;
   np2v_ = vbasis_->np(2)+2;
   while (!vbasis_->factorizable(np0v_)) np0v_ += 2;
-  while (!vbasis_->factorizable(np1v_)) np1v_ += 2;  
+  while (!vbasis_->factorizable(np1v_)) np1v_ += 2;
   while (!vbasis_->factorizable(np2v_)) np2v_ += 2;
-
+  
   if ( gamma_only_ )
   {
     // create Fourier transform object wavefunctions
@@ -1845,7 +1845,8 @@ if ( alpha_sx_ != 0.0 )
         sigma_exhf_[5] += ( fac1 * sigma_sumexp[5] ) / omega;
 
         // rcut*rcut divergence correction
-        if (vbasis_->context().mype()==0)
+        if (vbasis_->context().myrow()==0)
+        //if (vbasis_->context().mype()==0)
         //if ( (gcontext_.mype() == 0) )
         {
           const double div_corr_2 = - alpha_sx_ * exfac *
@@ -1893,7 +1894,6 @@ if ( alpha_sx_ != 0.0 )
   } // for ispin
   // sum contributions to the exchange energy
   //vbasis_->context().dsum(1, 1, &exchange_sum, 1);
-
   gcontext_.dsum(1, 1, &exchange_sum, 1);
   // accumulate stress tensor contributions
   if ( compute_stress )
