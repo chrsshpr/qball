@@ -45,10 +45,10 @@ class NaturalOrbital: public Var
 
   int set ( int argc, char **argv )
   {
-    if ( argc != 2 )
+    if ( argc != 2 &&  argc != 3)
     {
       //if ( ui->onpe0() )
-      cout << "natural_orbital takes only one value" << endl;
+      cout << "natural_orbital takes only one or two value" << endl;
       return 1;
     }
 
@@ -64,6 +64,18 @@ class NaturalOrbital: public Var
       cout <<
       " natural_orbital  must be OFF or ON" << endl;
       return 1;
+    }
+    if (argc == 3) 
+    {   
+       string w = argv[2];
+       
+       if (w == "-hole")
+         s->ctrl.saveholestate = true;
+       else
+       {
+         cout << "invalid commands" << endl;
+         return 1;
+        }
     }
     return 0;
   }
@@ -81,6 +93,7 @@ class NaturalOrbital: public Var
   NaturalOrbital(Sample *sample) : s(sample)
   {
     s->ctrl.natural_orbital = false;
+    s->ctrl.saveholestate = false;
   }
 };
 #endif

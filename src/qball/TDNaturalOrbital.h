@@ -35,6 +35,7 @@
 #include "FourierTransform.h"
 #include <vector>
 #include <complex>
+#include "Wavefunction.h"
 #include <math/matrix.h>
 class TDNaturalOrbital
 {
@@ -48,7 +49,9 @@ class TDNaturalOrbital
   valarray<double> nto_; 
   ComplexMatrix update_;
   ComplexMatrix nto_coeff;
-  ComplexMatrix hole_coeff;
+  ComplexMatrix intermidiate;
+  Wavefunction* hole;
+  //ComplexMatrix hole_coeff;
   ComplexMatrix elec_coeff; 
   FourierTransform* ft;
 
@@ -61,7 +64,7 @@ class TDNaturalOrbital
   void print_elec_orbital(int m,string filename);
   void print_nto_orbital(int m,string filename);
   void print_orbital(double* wftmp,string filename);
-
+  void save_hole_orbital();
   double nto(int n) {return nto_[n];};
   TDNaturalOrbital(const Sample& s);
   ~TDNaturalOrbital(void);

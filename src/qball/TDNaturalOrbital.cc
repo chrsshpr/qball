@@ -39,22 +39,28 @@
 #include <math/blas.h>
 #include <fstream>
 #include "FourierTransform.h"
+#include "string.h"
+#include <sys/stat.h>
+#include <sys/types.h>
 using namespace std;
 
 TDNaturalOrbital::TDNaturalOrbital(const Sample& s):
 s_(s),ref_((*s.proj_wf).sd(0,0)->c()),basis( (*s.proj_wf).sd(0,0)->basis()),ctxt_(ref_.context()),update_((*s.proj_wf).sd(0,0)->c()),
-nto_coeff((*s.proj_wf).sd(0,0)->c()),elec_coeff((*s.proj_wf).sd(0,0)->c()),hole_coeff((*s.proj_wf).sd(0,0)->c())
+nto_coeff((*s.proj_wf).sd(0,0)->c()),elec_coeff((*s.proj_wf).sd(0,0)->c()),intermidiate(ctxt_,ref_.n(),ref_.n(),ref_.nb(),ref_.nb())
 { 
   m = ref_.m();
   n = ref_.n();
   mb= ref_.mb();
   nb= ref_.nb();
   nto_.resize(n);
+  hole = new Wavefunction(*(s_.hamil_wf));
+  
   //valarray<double> nto_(n);
   //ComplexMatrix  nto_coeff(ctxt_,m,n,mb,nb);
   //ComplexMatrix  elec_coeff(ctxt_,m,n,mb,nb);
   //ComplexMatrix  hole_coeff(ctxt_,m,n,mb,nb);
-  
+  hole->clear();
+  //hole_coeff = hole->sd(0,0)->c();
   np0 = basis.np(0);
   np1 = basis.np(1);
   np2 = basis.np(2); 
@@ -70,57 +76,71 @@ TDNaturalOrbital::~TDNaturalOrbital()
 void TDNaturalOrbital::update(const ComplexMatrix& mat)
 {
   update_=mat;
+  intermidiate.gemm('c','n',1.0,ref_,update_,0.0);
 }
 void TDNaturalOrbital::update_NTO()
 {
-  ComplexMatrix z(ctxt_,n,n,nb,nb);
-  ComplexMatrix ortho(z),tmp(z);
+  ComplexMatrix z(intermidiate);
+  ComplexMatrix ortho(intermidiate);
   
-  tmp.gemm('c','n',1.0,ref_,update_,0.0);
-  ortho.gemm('c','n',1.0,tmp,tmp,0.0);
+  //tmp.gemm('c','n',1.0,ref_,update_,0.0);
+  ortho.gemm('c','n',1.0,intermidiate,intermidiate,0.0);
   ortho.heev('l',nto_,z);
   //(*nto_coeff).print(cout);
   nto_coeff.gemm('n','n',1.0,update_,z,0.0); 
 }
 void TDNaturalOrbital::update_elec()
-{
-
-  ComplexMatrix z(ctxt_,n,n,nb,nb);
-  z.gemm('c','n',1.0,ref_,nto_coeff,0.0);
-  elec_coeff.gemm('n','n',1.0,ref_,z,0.0);
-  int nloc = elec_coeff.nloc();
-  int mloc = elec_coeff.mloc();
+{ 
+  //ComplexMatrix z(intermidiate);
+  //ComplexMatrix ortho(intermidiate);
+  //ortho.gemm('n','c',1.0,intermidiate,intermidiate,0.0);
+  //ortho.heev('l',nto_,z);
+  //elec_coeff.gemm('n','n',1.0,ref_,z,0.0);
+  //ComplexMatrix z(ctxt_,n,n,nb,nb);
+  //z.gemm('c','n',1.0,ref_,nto_coeff,0.0);
+  //elec_coeff.gemm('n','n',1.0,ref_,z,0.0);
+  ComplexMatrix ortho(intermidiate);
+  ortho.gemm('c','n',1.0,ref_,nto_coeff,0.0);
+  elec_coeff.gemm('n','n',1.0,ref_,ortho,0.0);
+  //int nloc = elec_coeff.nloc();
+  //int mloc = elec_coeff.mloc();
   
 
-  for (int in = 0; in < nloc; in++)
-  {
-      int ist = elec_coeff.jglobal(in);
-      double occ = 1.0/nto(ist);
-      std::complex<double> *ptrz = &elec_coeff[in*mb];
-      for (int ii =0; ii< mloc; ii++)
-      {
-          ptrz[ii] *= occ;
-      }
-  }
+  //for (int in = 0; in < nloc; in++)
+  //{
+  //    int ist = elec_coeff.jglobal(in);
+  //    double occ = 1.0/nto(ist);
+  //    std::complex<double> *ptrz = &elec_coeff[in*mb];
+  //    for (int ii =0; ii< mloc; ii++)
+  //    {
+  //        ptrz[ii] *= occ;
+  //    }
+ // }
 }
 void TDNaturalOrbital::update_hole()
 {
+   ComplexMatrix & hole_coeff = hole->sd(0,0)->c();
    int nloc = hole_coeff.nloc();
    int mloc = hole_coeff.mloc();
    for (int in = 0; in < nloc; in++)
    {
       int ist = nto_coeff.jglobal(in);
       double occ = pow(nto(ist),0.5);
-      double hole = pow(1-nto(ist),0.5);
+      double hole = pow(abs(1-nto(ist)),0.5);
       std::complex<double> *ptrnto = nto_coeff.valptr(in*mb),*ptrelec = elec_coeff.valptr(in*mb),*ptrhole = hole_coeff.valptr(in*mb);
       for (int ii =0; ii<mloc; ii++)
       {
-            ptrhole[ii]= (ptrnto[ii]-occ*ptrelec[ii])/hole; 
+            //ptrhole[ii]= (ptrnto[ii]-occ*ptrelec[ii]);
+            ptrhole[ii]= (ptrnto[ii]-ptrelec[ii])/hole;  
       }
-   } 
+   }
+   ComplexMatrix test(ctxt_,n,n,nb,nb);
+   test.gemm('c','n',1.0,hole_coeff,hole_coeff,0.0);
+   test.print(cout); 
 }
 void TDNaturalOrbital::print_hole_orbital(int m,string filename)
 {
+   ComplexMatrix & hole_coeff = hole->sd(0,0)->c();
    vector<complex<double>> wftmp(ft->np012());
    vector<double> wftmpr(ft->np012());
    int nloc = hole_coeff.y(m);
@@ -157,7 +177,33 @@ void TDNaturalOrbital::print_nto_orbital(int m,string filename)
    print_orbital(&wftmpr[0],filename);
 
 }
-
+void TDNaturalOrbital::save_hole_orbital()
+{
+      string format = "binary";
+      string filestr="hole/hole";
+      if ( ctxt_.oncoutpe() ) {
+      cout << "<!-- SaveCmd:  writing wf " << filestr << "... -->" << endl;
+      string dirstr = filestr.substr(0, filestr.find_last_of('/'));
+      //string distr = "./states"
+      int mode = 0775;
+      struct stat statbuf;
+      int rc = stat(dirstr.c_str(), &statbuf);
+      if (rc == -1) {
+	cout << "<!-- Creating directory: " << dirstr << "/ -->" << endl;
+	rc = mkdir(dirstr.c_str(), mode);
+	rc = stat(dirstr.c_str(), &statbuf);
+      }
+      if (rc != 0 || !(statbuf.st_mode)) {
+	cout << "<ERROR> Can't stat directory " << dirstr << " </ERROR> " << endl;
+	MPI_Abort(MPI_COMM_WORLD,2);
+	}
+      
+      }
+      MPI_Barrier(MPI_COMM_WORLD);
+      
+      hole->write_states(filestr,format);
+      hole->write_mditer(filestr,s_.ctrl.mditer);
+}
 void TDNaturalOrbital::print_orbital(double * wftmp,string filename)
 { 
   

@@ -1243,26 +1243,31 @@ void EhrenSampleStepper::step(int niter)
             {
                 cout.setf(ios::fixed, ios::floatfield);
                 cout.setf(ios::right, ios::adjustfield);
-                cout << "   <occupancy=\"" << setprecision(6)
+                cout << "   <occupancy=\"" << setprecision(10)
                      << setw(12) << tdnto->nto(i) << " \"/>"<<endl;
             }
             cout << " </nto_set>" << endl;
          }
-         if (s_.ctrl.saventofreq>0 || s_.ctrl.saveholefreq>0 || s_.ctrl.saveelecfreq>0)
+         if (s_.ctrl.saventofreq>0 || s_.ctrl.saveholefreq>0 || s_.ctrl.saveelecfreq>0 || s_.ctrl.saveholestate)
          { 
             bool print_hole =(s_.ctrl.mditer%s_.ctrl.saveholefreq == 0 && s_.ctrl.saveholefreq>0); 
             bool print_elec =(s_.ctrl.mditer%s_.ctrl.saveelecfreq == 0 && s_.ctrl.saveelecfreq>0);
-            bool print_NTO =(s_.ctrl.mditer%s_.ctrl.saventofreq == 0 && s_.ctrl.saventofreq>0);
-            if (print_NTO||print_elec||print_hole)
+            bool print_NTO =(s_.ctrl.mditer%s_.ctrl.saventofreq == 0 && s_.ctrl.saventofreq>0);  
+            bool save_hole = (s_.ctrl.mditer == niter);
+            if (print_NTO||print_elec||print_hole||save_hole)
             {
                tdnto->update_NTO();
-               if (print_elec||print_hole)
+               if (print_elec||print_hole||save_hole)
                {
                      tdnto->update_elec();
-                     if (print_hole)
+                     if (print_hole|| save_hole)
                        tdnto->update_hole();
                }
              } 
+             if (save_hole)
+             {  
+                  tdnto->save_hole_orbital();
+             }
              if (print_NTO) 
              {
                 ostringstream oss;
