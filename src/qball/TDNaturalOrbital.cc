@@ -134,9 +134,9 @@ void TDNaturalOrbital::update_hole()
             ptrhole[ii]= (ptrnto[ii]-ptrelec[ii])/hole;  
       }
    }
-   ComplexMatrix test(ctxt_,n,n,nb,nb);
-   test.gemm('c','n',1.0,hole_coeff,hole_coeff,0.0);
-   test.print(cout); 
+   //ComplexMatrix test(ctxt_,n,n,nb,nb);
+   //test.gemm('c','n',1.0,hole_coeff,hole_coeff,0.0);
+   //test.print(cout); 
 }
 void TDNaturalOrbital::print_hole_orbital(int m,string filename)
 {
@@ -177,6 +177,76 @@ void TDNaturalOrbital::print_nto_orbital(int m,string filename)
    print_orbital(&wftmpr[0],filename);
 
 }
+void TDNaturalOrbital::proj_hole_orbital()
+{
+   ComplexMatrix & hole_coeff = hole->sd(0,0)->c();
+   int nvir = (s_.proj_wf_virtual)->sd(0,0)->c().n()-n;
+   ComplexMatrix vir_coeff(ctxt_,m,nvir,mb,nb);
+   vir_coeff.getsub(s_.proj_wf_virtual->sd(0,0)->c(),m,nvir,0,n);
+   //vir_coeff.print(cout);
+   //s_.proj_wf_virtual->sd(0,0)->c().print(cout);
+   //s_.proj_wf_virtual->sd(0,0)->c().getsub( vir_coeff, 0,n,m,nvir);
+  //vir_coeff.print(cout);
+   ComplexMatrix proj_hole(ctxt_,nvir,n,nb,nb);
+   proj_hole.clear();
+   proj_hole.gemm('c','n',1.0,vir_coeff,hole_coeff,0.0);
+   int hole_index1 = s_.ctrl.holeindex1;
+   int hole_index2 = s_.ctrl.holeindex2;
+   if ( hole_index1 ==-1 &&  hole_index2 == -1)
+   {
+      hole_index1 = 0;
+      hole_index2 = nvir;
+   }
+   // To be done: add in memory buffer
+   Context ctxtl(1,1);
+   
+   ComplexMatrix t(ctxtl,nvir,n);
+   t.getsub(proj_hole,nvir,n,0,0);
+   if ( ctxt_.oncoutpe() )
+   {
+         if (hole_index1== hole_index2)
+         {
+             cout << " <hole_projection index=\"" << hole_index1 << "\">" << endl;
+             for (int i =0 ; i <nvir ; i++)
+             {
+                cout.setf(ios::fixed, ios::floatfield);
+                cout.setf(ios::right, ios::adjustfield);
+                double pop = pow(norm(t[hole_index1*nvir+i]),2) ;
+                cout << "   <population=\"" << setprecision(6) << setw(12) << pop << " \"/>"<<endl;
+            }
+            cout << " </hole_projection>" << endl;
+         }
+         else
+         {
+             int size = hole_index2-hole_index1;
+             cout << " <hole_projection index=\"";
+             for (int i =hole_index1 ; i <hole_index2 ; i++)
+             {     
+                  cout<<i<<"\t";
+             }
+             cout<<endl;
+             for (int j =0 ; j <nvir ; j++)
+             {
+                
+                cout.setf(ios::fixed, ios::floatfield);
+                cout.setf(ios::right, ios::adjustfield);
+                //double pop = pow(norm(t[hole_index1*nvir+i]),2) ;
+                cout << "   <population=\"";
+                for (int i =hole_index1 ; i <hole_index2 ; i++)
+                {  
+                   double pop = norm(t[i*nvir+j]) ;  
+                   cout<<setprecision(6) << setw(12) << pop ;
+                }
+                cout << " \"/>"<<endl;
+            }
+
+             
+         }
+   } 
+  // if ( t.active() )
+   
+}
+/*
 void TDNaturalOrbital::save_hole_orbital()
 {
       string format = "binary";
@@ -204,6 +274,7 @@ void TDNaturalOrbital::save_hole_orbital()
       hole->write_states(filestr,format);
       hole->write_mditer(filestr,s_.ctrl.mditer);
 }
+*/
 void TDNaturalOrbital::print_orbital(double * wftmp,string filename)
 { 
   

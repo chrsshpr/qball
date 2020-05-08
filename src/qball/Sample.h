@@ -59,6 +59,7 @@ class Sample {
   Wavefunction* previous_wf;
   Wavefunction* proj_wf;
   Wavefunction* proj2nd_wf;
+  Wavefunction* proj_wf_virtual;
   Wavefunction* wfv; // wavefunction velocity
   Control ctrl;
   SymmetrySet symmetries;

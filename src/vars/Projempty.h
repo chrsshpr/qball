@@ -22,53 +22,67 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 //
-// TDNaturalOrbital.h 
+// Projempty.h
 //
 ////////////////////////////////////////////////////////////////////////////////
 
 #include <config.h>
 
-#ifndef TDNATURALORBITAL_H
-#define TDNATURALORBITAL_H
+#ifndef PROJEMPTY_H
+#define PROJEMPTY_H
 
-#include "Sample.h"
-#include "FourierTransform.h"
-#include <vector>
-#include <complex>
-#include "Wavefunction.h"
-#include <math/matrix.h>
-class TDNaturalOrbital
+#include<iostream>
+#include<iomanip>
+#include<sstream>
+#include<stdlib.h>
+#include <qball/Wavefunction.h>
+#include <qball/Sample.h>
+
+class Projempty : public Var
 {
-  private:
-  const Sample & s_;
-  const ComplexMatrix& ref_;
-  const Context& ctxt_;
-  const Basis& basis;
-  int n,nb,m,mb;
-  int np0,np1,np2;
-  valarray<double> nto_; 
-  ComplexMatrix update_;
-  ComplexMatrix nto_coeff;
-  ComplexMatrix intermidiate;
-  Wavefunction* hole;
-  //ComplexMatrix hole_coeff;
-  ComplexMatrix elec_coeff; 
-  FourierTransform* ft;
+  Sample *s;
 
   public:
-  void update(const ComplexMatrix& mat);
-  void update_elec();
-  void update_hole();
-  void update_NTO();
-  void print_hole_orbital(int m,string filename);
-  void print_elec_orbital(int m,string filename);
-  void print_nto_orbital(int m,string filename);
-  void print_orbital(double* wftmp,string filename);
-  void save_hole_orbital();
-  void proj_hole_orbital();
-  void proj_elec_orbital();
-  double nto(int n) {return nto_[n];};
-  TDNaturalOrbital(const Sample& s);
-  ~TDNaturalOrbital(void);
+
+  char const*name ( void ) const { return "projempty"; };
+
+  int set ( int argc, char **argv )
+  {
+    if ( argc != 2 )
+    {
+      if ( ui->oncoutpe() )
+      cout << " <ERROR> nempty takes only one value </ERROR>" << endl;
+      return 1;
+    }
+    s->proj_wf_virtual = new Wavefunction(s->wf);
+    *(s->proj_wf_virtual) = s->wf;
+    int v = atoi(argv[1]);
+    if ( v < 0 )
+    {
+      if ( ui->oncoutpe() )
+        cout << " <ERROR> nempty must be non-negative </ERROR>" << endl;
+      return 1;
+    }
+
+    s->proj_wf_virtual->set_nempty(v);
+    
+    return 0;
+  }
+
+  string print (void) const
+  {
+     ostringstream st;
+     st.setf(ios::left,ios::adjustfield);
+     st << setw(10) << name() << " = ";
+     st.setf(ios::right,ios::adjustfield);
+     st << setw(10) << s->wf.nempty();
+     return st.str();
+  }
+
+  Projempty(Sample *sample) : s(sample) {};
 };
 #endif
+
+// Local Variables:
+// mode: c++
+// End:

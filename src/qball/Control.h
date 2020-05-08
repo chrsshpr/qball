@@ -154,9 +154,9 @@ struct Control
   double laser_freq;
   D3vector laser_amp;
   int saveholefreq,saveelecfreq,saventofreq;
-  int holeindex,elecindex,ntoindex;
+  int holeindex,elecindex,ntoindex,holeindex1,holeindex2,elecindex1,elecindex2;
   string saveholefilebase,saveelecfilebase,saventofilebase;
-  bool natural_orbital;
+  bool natural_orbital,projelec,projhole;
   D3vector sine_field;
   bool  compute_sine_field ;
   bool saveholestate;

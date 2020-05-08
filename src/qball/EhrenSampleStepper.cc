@@ -1248,26 +1248,32 @@ void EhrenSampleStepper::step(int niter)
             }
             cout << " </nto_set>" << endl;
          }
-         if (s_.ctrl.saventofreq>0 || s_.ctrl.saveholefreq>0 || s_.ctrl.saveelecfreq>0 || s_.ctrl.saveholestate)
+         if (s_.ctrl.saventofreq>0 || s_.ctrl.saveholefreq>0 || s_.ctrl.saveelecfreq>0 || s_.ctrl.projhole)
          { 
             bool print_hole =(s_.ctrl.mditer%s_.ctrl.saveholefreq == 0 && s_.ctrl.saveholefreq>0); 
             bool print_elec =(s_.ctrl.mditer%s_.ctrl.saveelecfreq == 0 && s_.ctrl.saveelecfreq>0);
             bool print_NTO =(s_.ctrl.mditer%s_.ctrl.saventofreq == 0 && s_.ctrl.saventofreq>0);  
-            bool save_hole = (s_.ctrl.mditer == niter);
-            if (print_NTO||print_elec||print_hole||save_hole)
+            bool proj_hole =s_.ctrl.projhole;
+            bool proj_elec =s_.ctrl.projelec;
+            //bool save_hole = (s_.ctrl.mdier == niter);
+            if ( print_NTO||print_elec||print_hole || proj_hole || proj_elec )
             {
                tdnto->update_NTO();
-               if (print_elec||print_hole||save_hole)
+               if (print_elec||print_hole ||proj_hole ||proj_elec)
                {
                      tdnto->update_elec();
-                     if (print_hole|| save_hole)
+                     if (print_hole ||proj_hole)
                        tdnto->update_hole();
                }
              } 
-             if (save_hole)
-             {  
-                  tdnto->save_hole_orbital();
-             }
+             if (proj_hole)
+                  tdnto->proj_hole_orbital();
+             //if (proj_elec)
+             //     tdnto->proj_elec_orbital();  
+             //if (save_hole)
+             //{  
+             //     tdnto->save_hole_orbital();
+             //}
              if (print_NTO) 
              {
                 ostringstream oss;

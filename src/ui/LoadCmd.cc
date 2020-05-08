@@ -76,6 +76,8 @@ int LoadCmd::action(int argc, char **argv) {
       encoding = "proj";
     else if ( arg=="-proj2nd" )
       encoding = "proj2nd";
+    else if ( arg=="-full" )
+      encoding = "full";
     else if ( arg=="-states-old" )
       encoding = "states-old";
     else if ( arg=="-xml" )
@@ -532,7 +534,13 @@ int LoadCmd::action(int argc, char **argv) {
   (*(s->proj_wf)).read_states(filestr);
   }
 
-  //////  2nd proj ///////
+ if (encoding == "full") {
+  //new Wavefunction(s->wf);
+  //s->proj_wf = new Wavefunction(s->wf);
+  //(s->proj_wf) = s->wf;
+  (*(s->proj_wf_virtual)).read_states(filestr);
+  }
+ //////  2nd proj ///////
   if (encoding == "proj2nd") {
   new Wavefunction(s->wf);
   s->proj2nd_wf = new Wavefunction(s->wf);
