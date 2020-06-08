@@ -50,9 +50,9 @@ class TDNaturalOrbital
   ComplexMatrix update_;
   ComplexMatrix nto_coeff;
   ComplexMatrix intermidiate;
-  Wavefunction* hole;
+  Wavefunction* electron;
   //ComplexMatrix hole_coeff;
-  ComplexMatrix elec_coeff; 
+  ComplexMatrix hole_coeff; 
   FourierTransform* ft;
 
   public:

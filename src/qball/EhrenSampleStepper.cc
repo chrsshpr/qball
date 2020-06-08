@@ -1248,7 +1248,7 @@ void EhrenSampleStepper::step(int niter)
             }
             cout << " </nto_set>" << endl;
          }
-         if (s_.ctrl.saventofreq>0 || s_.ctrl.saveholefreq>0 || s_.ctrl.saveelecfreq>0 || s_.ctrl.projhole)
+         if (s_.ctrl.saventofreq>0 || s_.ctrl.saveholefreq>0 || s_.ctrl.saveelecfreq>0 || s_.ctrl.projhole || s_.ctrl.projelec)
          { 
             bool print_hole =(s_.ctrl.mditer%s_.ctrl.saveholefreq == 0 && s_.ctrl.saveholefreq>0); 
             bool print_elec =(s_.ctrl.mditer%s_.ctrl.saveelecfreq == 0 && s_.ctrl.saveelecfreq>0);
@@ -1261,15 +1261,15 @@ void EhrenSampleStepper::step(int niter)
                tdnto->update_NTO();
                if (print_elec||print_hole ||proj_hole ||proj_elec)
                {
-                     tdnto->update_elec();
-                     if (print_hole ||proj_hole)
-                       tdnto->update_hole();
+                     tdnto->update_hole();
+                     if (print_elec ||proj_elec)
+                       tdnto->update_elec();
                }
              } 
              if (proj_hole)
                   tdnto->proj_hole_orbital();
-             //if (proj_elec)
-             //     tdnto->proj_elec_orbital();  
+             if (proj_elec)
+                  tdnto->proj_elec_orbital();  
              //if (save_hole)
              //{  
              //     tdnto->save_hole_orbital();
