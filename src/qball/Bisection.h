@@ -55,17 +55,19 @@ class Bisection
     std::vector<int> xy_proj_;
 
     // matrices of real space wave functions in subdomains
-    std::vector<DoubleMatrix*> rmat_;
+    std::vector<ComplexMatrix*> rmat_;
 
     // a matrices
     int nmat_;
-    std::vector<DoubleMatrix*> amat_;
-    std::vector<std::vector<double> > adiag_;
-    DoubleMatrix *u_;
+    std::vector<ComplexMatrix*> amat_;
+    std::vector<std::vector<complex<double>> > adiag_; 
+    //std::vector<std::vector<double> > adiag_real_;
+    //std::vector<std::vector<double> > adiag_imag_;
+    ComplexMatrix *u_;
 
     // test function
     bool check_amat(const ComplexMatrix &c);
-    void trim_amat(const std::vector<double>& occ);
+    //void trim_amat(const std::vector<<double>& occ);
 
   public:
 
@@ -73,9 +75,9 @@ class Bisection
     void compute_transform(const SlaterDet& sd, int maxsweep, double tol);
     void compute_localization(double epsilon);
     void forward(SlaterDet& sd);
-    void forward(DoubleMatrix& u, SlaterDet& sd);
+    void forward(ComplexMatrix& u, SlaterDet& sd);
     void backward(SlaterDet& sd);
-    void backward(DoubleMatrix& u, SlaterDet& sd);
+    void backward(ComplexMatrix& u, SlaterDet& sd);
 
     int nmat(void) const { return nmat_; }
     long int localization(int i) const { return localization_[i]; }
@@ -83,7 +85,7 @@ class Bisection
     { return localization_; }
     bool overlap(int i, int j) const;
     bool overlap(const std::vector<long int>& loc, int i, int j) const;
-    const DoubleMatrix& u(void) const { return *u_; }
+    const ComplexMatrix& u(void) const { return *u_; }
     double pair_fraction(void) const;
     double size(int i) const;
     double total_size(void) const;
