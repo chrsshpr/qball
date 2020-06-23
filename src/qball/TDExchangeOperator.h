@@ -166,7 +166,7 @@ class ExchangeOperator
   // bisection
   bool use_bisection_;
   vector<Bisection*> bisection_;
-  vector<DoubleMatrix*> uc_;
+  vector<ComplexMatrix*> uc_;
   vector<long int> localization_;
 
   // screened interaction potential paramters

@@ -182,7 +182,7 @@ ExchangeOperator::ExchangeOperator( Sample& s, double alpha_sx,
     statej_[i].resize(np012loc_);
   }
 
-  use_bisection_ = s.ctrl.btHF > 0.0;
+  use_bisection_ = s.ctrl.btHF >= 0.0;
 
   // if only at gamma
   if ( gamma_only_ )
@@ -197,7 +197,7 @@ ExchangeOperator::ExchangeOperator( Sample& s, double alpha_sx,
       {
         bisection_[ispin] = new Bisection(*s_.wf.sd(ispin,0),s_.ctrl.blHF);
         const ComplexMatrix& c = s_.wf.sd(ispin,0)->c();
-        uc_[ispin] = new DoubleMatrix(c.context(),c.n(),c.n(),c.nb(),c.nb());
+        uc_[ispin] = new ComplexMatrix(c.context(),c.n(),c.n(),c.nb(),c.nb());
       }
     }
   }
