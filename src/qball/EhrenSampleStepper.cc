@@ -368,9 +368,9 @@ void EhrenSampleStepper::step(int niter)
         ef_.energy(s_.wf, false,dwf,compute_forces,fion,compute_stress,sigma_eks);
     tmap["efn"].stop();
 
-    tmap["current"].start();
-    currd_.update_current(ef_, dwf);
-    tmap["current"].start();
+    //tmap["current"].start();
+    //currd_.update_current(ef_, dwf);
+    //tmap["current"].start();
 
     if(ef_.vp && oncoutpe){
       std::cout << "<!-- vector_potential: " << ef_.vp->value() << " -->\n";
@@ -1007,7 +1007,7 @@ if (s_.ctrl.saveholefreq > 0)
 	  tmap["gemm"].stop();
 	  //ComplexMatrix test(wf.sd(ispin,ikp)->context(),(wf.sd(ispin,ikp)->c()).n(),(wf.sd(ispin,ikp)->c()).n(),(wf.sd(ispin,ikp)->c()).nb(),(wf.sd(ispin,ikp)->c()).nb());
           //test.gemm('c','n',1.0,(wf).sd(ispin,ikp)->c(),(wf).sd(ispin,ikp)->c(),0.0);
-          ortho.print(cout);
+          //ortho.print(cout);
           //test.clear();
 
           DoubleMatrix ortho_proxy(ortho);
@@ -1047,6 +1047,43 @@ if (s_.ctrl.saveholefreq > 0)
             }
             cout << "projsum = " << ehp_count << endl;
           }
+          std::string filebase = s_.ctrl.saveprojfilebase;
+          std::ostringstream oss;
+          oss.width(8);  oss.fill('0');  oss << s_.ctrl.mditer;
+          std::ostringstream oss2;
+          oss2.width(8); oss2.fill('0'); oss2<<s_.ctxt_.mype();
+          std::string projfilename = filebase + "." + oss.str() + oss2.str() +  ".txt";
+          std::string format = "text";
+
+        if (wf.sd(ispin,ikp)->context().myrow() < wf.sd(ispin,ikp)->context().npcol()) {
+              ofstream os;
+              os.open(projfilename.c_str(),ofstream::out);    // text output
+              os.setf(ios::fixed,ios::floatfield);
+              os << setprecision(8);
+
+              for ( int m = 0; m < (ortho.nblocks()); m++ ) {
+                 ostringstream oss;
+                 oss.setf(ios::scientific,ios::floatfield);
+                 oss << setprecision(8);
+                 for ( int l = 0; l < (ortho.mblocks()); l++ ) {
+                  for ( int y = 0; y < ortho.nbs(m); y++ ) {
+                   for ( int x = 0; x < ortho.mbs(l); x++ ) {
+                    int i = ortho.i(l,x);
+                    int j = ortho.j(m,y);
+                    int itmp = x + l*ortho.mb();
+                    int jtmp = y + m*ortho.nb();
+                    int ival = itmp + jtmp*ortho.mloc();
+
+                    oss << i << " " << j << " " << ival << " " << fixed <<  ortho[ival] << "  " << fixed << norm(ortho[ival]) << " " << itmp << " " << jtmp << endl;
+
+                      }
+                     }
+                    }
+                 string tos = oss.str();
+                 os.write(tos.c_str(),tos.length());
+                }
+               os.close();
+             }
        }
       }
      }

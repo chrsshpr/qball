@@ -652,6 +652,6 @@ int jade_complex(int maxsweep, double tol, vector<ComplexMatrix*> a,
   }
 
   if ( ctxt.onpe0() )
-    cout << " jade: comm time: " << tm_comm.real() << endl;
+    cout << " jade_complex: comm time: " << tm_comm.real() << endl;
   return nsweep;
 }
