@@ -84,6 +84,7 @@ Wavefunction::Wavefunction(const Wavefunction& wf) :
   nel_(wf.nel_),
   nempty_(wf.nempty_),
   nspin_(wf.nspin_), 
+  nst_(wf.nst_),
   deltaspin_(wf.deltaspin_),
   nrowmax_(wf.nrowmax_), 
   nparallelkpts_(wf.nparallelkpts_),
@@ -105,7 +106,7 @@ Wavefunction::Wavefunction(const Wavefunction& wf) :
   deltacharge_(wf.deltacharge_)
 {
   // Create a Wavefunction using the dimensions of the argument
-  compute_nst();
+  //compute_nst();
   
   // Next lines: do special allocation of contexts to ensure that 
   // contexts are same as those of wf
@@ -205,7 +206,8 @@ Wavefunction::Wavefunction(const Wavefunction& wf) :
       nkplocproc0_[ispin][kloc] = wf.nkplocproc0(ispin,kloc);
     }
   }
-  resize(cell_,refcell_,ecut_);
+  //resize(cell_,refcell_,ecut_);
+  resize();
   reset();
 
   hasdata_ = true;   // wf has been allocated
@@ -443,7 +445,8 @@ void Wavefunction::allocate(void) {
   if (!hasdata_)
      hasdata_ = true;
 
-  resize(cell_,refcell_,ecut_);
+  //resize(cell_,refcell_,ecut_);
+  resize();
   reset();
 
   //ewd DEBUG:  do we need this?
@@ -588,7 +591,38 @@ double Wavefunction::entropy(void) const {
   entropysum[0] /= entropysum[1];
   return entropysum[0];
 }
+////////////////////////////////////////////////////////////////////////////////
+void Wavefunction::resize(void)
+{
 
+   try {
+    // resize all SlaterDets using cell, refcell, ecut and nst_[ispin]
+    for ( int ispin = 0; ispin < nspin_; ispin++ ) {
+      if (spinactive(ispin)) {
+        for ( int ikp=0; ikp<nkp(); ikp++) {
+          if (kptactive(ikp)) {
+            assert(sd_[ispin][ikp] != 0);
+            sd_[ispin][ikp]->set_local_block(mbset_,nbset_);
+            sd_[ispin][ikp]->set_nblocks(mblks_,nblks_);
+            sd_[ispin][ikp]->resize(cell_,refcell_,ecut_,nst_[ispin]);
+          }
+        }
+      }
+    }
+  }
+  catch ( const SlaterDetException& sdex ) {
+    cout << "<ERROR> Wavefunction: SlaterDetException during resize: </ERROR>" << endl
+         << sdex.msg << endl;
+    // no resize took place
+    return;
+  }
+  catch ( bad_alloc )
+  {
+    cout << "<ERROR> Wavefunction: insufficient memory for resize operation </ERROR>" << endl;
+    return;
+  }
+
+}
 ////////////////////////////////////////////////////////////////////////////////
 void Wavefunction::resize(const UnitCell& cell, const UnitCell& refcell, 
   double ecut) {
@@ -681,7 +715,8 @@ void Wavefunction::set_nel(int nel) {
   nel_ = nel;
   compute_nst();
   if (hasdata_)
-    resize(cell_,refcell_,ecut_);
+   // resize(cell_,refcell_,ecut_);
+    resize();
 }
   
 ////////////////////////////////////////////////////////////////////////////////
@@ -695,7 +730,8 @@ void Wavefunction::set_nempty(int nempty) {
   nempty_ = nempty;
   compute_nst();
   if (hasdata_)
-    resize(cell_,refcell_,ecut_);
+    //resize(cell_,refcell_,ecut_);
+    resize();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -714,7 +750,8 @@ void Wavefunction::set_nspin(int nspin) {
   if (hasdata_) {
     allocate();
     cout << "<!-- Wavefunction::set_nspin: " << nspin << " allocate done -->" << endl;
-    resize(cell_,refcell_,ecut_);
+    //resize(cell_,refcell_,ecut_);
+    resize();
     reset();
   }
 }
@@ -731,7 +768,8 @@ void Wavefunction::set_deltaspin(int deltaspin) {
   else {
     compute_nst();
     if (hasdata_) {
-      resize(cell_,refcell_,ecut_);
+      //resize(cell_,refcell_,ecut_);
+      resize();
       reset();
     }
   }
@@ -1061,7 +1099,8 @@ void Wavefunction::add_kpoint(D3vector kpoint, double weight) {
     allocate();
     if ( ctxt_.oncoutpe() )
       cout << " Wavefunction::add_kpoint: " << kpoint << " allocate done" << endl;
-    resize(cell_,refcell_,ecut_);
+    //resize(cell_,refcell_,ecut_);
+    resize();
     reset();
 
     /* ewd:  I don't think this is necessary

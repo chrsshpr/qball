@@ -53,6 +53,7 @@ noinst_HEADERS =                            \
 	Non_Selfconsistent_Energy_Output.h  \
 	Nparallelkpts.h                     \
 	Nrowmax.h                           \
+	Occ.h 				    \
 	Pblock.h                            \
 	Polarization.h			    \
 	RefCell.h                           \

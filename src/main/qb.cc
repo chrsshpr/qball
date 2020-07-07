@@ -126,6 +126,7 @@ using namespace std;
 #include <vars/NA_overlaps.h>
 #include <vars/Dt.h>
 #include <vars/Nempty.h>
+#include <vars/Occ.h>
 #include <vars/Nrowmax.h>
 #include <vars/RefCell.h>
 #include <vars/Spin.h>
@@ -396,6 +397,7 @@ int main(int argc, char **argv, char **envp)
   ui->addVar(new FermiTemp(s));
   ui->addVar(new Dt(s));
   ui->addVar(new Nempty(s));
+  ui->addVar(new Occ(s));
   ui->addVar(new Nrowmax(s));
   ui->addVar(new RefCell(s));
   ui->addVar(new Spin(s));

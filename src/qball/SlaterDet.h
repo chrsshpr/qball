@@ -120,7 +120,8 @@ class SlaterDet {
 
   void kinetic_hpsi(FourierTransform& ft, const double* vxc_tau, SlaterDet& sdp) const; // YY
 
-  void apply_electric_field(int e_direction, double e_strength) ; // YY
+  void apply_electric_field(int e_direction, double e_strength, int state_index) ; // YY
+
   void randomize(double amplitude);
   void randomize_real(double amplitude);
   void randomize_us(double amplitude, AtomSet& as);
@@ -152,6 +153,7 @@ class SlaterDet {
   const double* occ_ptr(int i) const { return &occ_[i]; }
   void set_occ(vector<double>& occ)
     { assert(occ_.size()==occ.size()); occ_ = occ; }
+  void set_occ(int i, double f) { occ_[i] = f; }
   void set_eig(vector<double>& eig)
     { assert(eig_.size()==eig.size()); eig_ = eig; }
   void set_eig(valarray<double>& eig)
