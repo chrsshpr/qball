@@ -39,17 +39,27 @@ int ApplyElectricFieldPulseCmd::action(int argc, char **argv)
   Wavefunction& wf = s->wf;
   SlaterDet& sd = *(wf.sd(0,0));
 
-  if ( argc != 3 ) 
+  if ( argc != 3 && argc != 4) 
   {
     if ( ui->oncoutpe() )
     cout << " <ERROR> apply_electric_field_pulse takes only two values </ERROR>" << endl;
     cout << " <!-- use: apply_electric_field_pulse e_direction e_strength -->" << endl;
+    cout << " <!-- use: apply_electric_field_pulse e_direction e_strength state_index-->" << endl;
     return 1;
   }
 
 
   int e_direction = atoi(argv[1]);
   double e_strength = atof(argv[2]);
+  int state_index;
+  if ( argc == 4)
+  {
+    state_index = atoi(argv[3]);
+  }
+  else
+  {
+    state_index = -1;
+  }
 
   if (wf.nkp() > 1 || wf.kpoint(0) != D3vector(0,0,0)) {
     if ( ui->oncoutpe() )
@@ -63,8 +73,7 @@ int ApplyElectricFieldPulseCmd::action(int argc, char **argv)
     return 1;
   }
 
-  sd.apply_electric_field(e_direction, e_strength);
+  sd.apply_electric_field(e_direction, e_strength, state_index);
 
   return 0;
 }
-
