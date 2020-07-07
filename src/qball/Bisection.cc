@@ -563,7 +563,6 @@ bool Bisection::check_amat(const ComplexMatrix &c)
   for ( int k = 0; k < bmat.size(); k++ )
   {
     bmat[k] = new ComplexMatrix(c.context(),c.n(),c.n(),c.nb(),c.nb());
-    cout << bmat[k] << endl;
   }
   ComplexMatrix c_proxy(c);
   ComplexMatrix cd_proxy(cd);
