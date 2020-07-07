@@ -2027,7 +2027,7 @@ void SlaterDet::promote_occ(double occ_change, int origin_level, int destination
    assert (eig_.size() == c_.n());
 
    occ_[origin_level] -= occ_change;
-   //occ_[destination_level] += occ_change; // CS remove charge without relocating it to allow for fractional occupations
+   occ_[destination_level] += occ_change; // CS remove charge without relocating it to allow for fractional occupations
 
    assert ( (occ_[origin_level]>=0.0) && (occ_[origin_level]<=2.0) );
    assert ( (occ_[destination_level]>=0.0) && (occ_[destination_level]<=2.0) );
