@@ -201,23 +201,47 @@ void TDNaturalOrbital::proj_sorted_hole_orbital()
    t.getsub(proj_hole,n,n,0,0);
    if ( ctxt_.oncoutpe() )
    {
-         if (hole_index1== hole_index2)
-         {
-             cout << " <hole_projection index=\"" << hole_index1 << "\">" << endl;
-             for (int i =0 ; i <n ; i++)
+         //if (hole_index1== hole_index2)
+         //{
+         //    cout << " <hole_projection index=\"" << hole_index1 << "\">" << endl;
+         //    for (int i =0 ; i <n ; i++)
+         //    {
+         //       cout.setf(ios::fixed, ios::floatfield);
+         //       cout.setf(ios::right, ios::adjustfield);
+         //       double pop = norm(t[hole_index1*n+i]) /nto_[hole_index1];
+         //       cout << "   <population=\"" << setprecision(6) << setw(12) << pop << " \"/>"<<endl;
+         //   }
+         //   cout << " </hole_projection>" << endl;
+        // }
+         //else
+         {        
+             int size = hole_index2-hole_index1;
+             int index[size];
+             for (int i =0 ; i <size ; i++)
              {
+                 double local_max = 0 ;
+                 for  (int j =0 ; j <n ; j++)
+                 {
+                   int reverse = n-i-1-hole_index1;
+                   double pop = norm(t[reverse*n+j])/nto_[i];
+                   if ( pop>local_max)
+                   {
+                        index[i]=j;
+                        local_max = pop;
+                   }
+                 }
+             }
+            cout << " <sorted_hole size=\"" << size << "\">" << endl;
+            for ( int i = 0; i < size; i++ )
+            {
                 cout.setf(ios::fixed, ios::floatfield);
                 cout.setf(ios::right, ios::adjustfield);
-                double pop = norm(t[hole_index1*n+i]) /nto_[hole_index1];
-                cout << "   <population=\"" << setprecision(6) << setw(12) << pop << " \"/>"<<endl;
+                cout << "   <population=\"" << setprecision(10)
+                     << setw(12) << nto(index[i]) << " \"/>"<<endl;
             }
-            cout << " </hole_projection>" << endl;
-         }
-         else
-         {
-             int size = hole_index2-hole_index1;
-             cout << " <hole_projection index=\"";
-             for (int i =hole_index1 ; i <hole_index2 ; i++)
+            cout << " </sorted_hole>" << endl;
+            cout << " <hole_projection index=\"";
+             for (int i =0 ; i <size ; i++)
              {
                   cout<<i<<"\t";
              }
@@ -230,7 +254,7 @@ void TDNaturalOrbital::proj_sorted_hole_orbital()
                 cout << "   <population=\"";
                 for (int i = hole_index1 ; i < hole_index2 ; i++)
                 {
-                   double pop = norm(t[i*n+j])/nto_[i] ;
+                   double pop = norm(t[index[i]*n+j])/nto_[i] ;
                    cout<<setprecision(6) << setw(12) << pop ;
                 }
                 cout << " \"/>"<<endl;
