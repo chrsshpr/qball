@@ -68,8 +68,9 @@ class NaturalOrbital: public Var
     if (argc > 2) 
     {   
        string w = argv[2];
-       
-       if (w == "-hole")
+       //if (w = "-sorted")
+      //  s->ctrl.natural_orbital_sorted= true;
+       if (w == "-hole"|| w=="sorted_hole")
        {
             
             s->ctrl.projhole = true;
@@ -84,10 +85,12 @@ class NaturalOrbital: public Var
                s->ctrl.holeindex1=atoi(argv[3]);
                s->ctrl.holeindex2=atoi(argv[4]);
             }                   
+            if (w=="sorted_hole")s->ctrl.sorted_hole= true;
        }
-       if (w == "-electron")
+       if (w == "-electron"||w == "-effective_electron")
        {
            s->ctrl.projelec = true;
+           if (w == "-effective_electron")  s->ctrl.eff_elec = true;
            if (argc ==4)   
            {
                 s->ctrl.elecindex1=atoi(argv[3]);
@@ -125,6 +128,8 @@ class NaturalOrbital: public Var
     s->ctrl.elecindex2 = -1;
     s->ctrl.projhole = false;
     s->ctrl.projelec  = false;
+    s->ctrl.eff_elec  = false;
+    s->ctrl.sorted_hole = false;
   }
 };
 #endif

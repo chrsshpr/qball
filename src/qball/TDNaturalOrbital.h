@@ -66,7 +66,9 @@ class TDNaturalOrbital
   void print_orbital(double* wftmp,string filename);
   void save_hole_orbital();
   void proj_hole_orbital();
+  void proj_sorted_hole_orbital();
   void proj_elec_orbital();
+  void update_effective_elec();
   double nto(int n) {return nto_[n];};
   TDNaturalOrbital(const Sample& s);
   ~TDNaturalOrbital(void);

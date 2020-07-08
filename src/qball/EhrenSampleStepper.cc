@@ -1255,6 +1255,8 @@ void EhrenSampleStepper::step(int niter)
             bool print_NTO =(s_.ctrl.mditer%s_.ctrl.saventofreq == 0 && s_.ctrl.saventofreq>0);  
             bool proj_hole =s_.ctrl.projhole;
             bool proj_elec =s_.ctrl.projelec;
+            bool eff_elec = s_.ctrl.eff_elec;
+            bool sorted_hole = s_.ctrl.sorted_hole;
             //bool save_hole = (s_.ctrl.mdier == niter);
             if ( print_NTO||print_elec||print_hole || proj_hole || proj_elec )
             {
@@ -1262,12 +1264,18 @@ void EhrenSampleStepper::step(int niter)
                if (print_elec||print_hole ||proj_hole ||proj_elec)
                {
                      tdnto->update_hole();
-                     if (print_elec ||proj_elec)
+                     if (print_elec ||proj_elec &&  !eff_elec)
                        tdnto->update_elec();
+                     if (print_elec ||proj_elec && eff_elec)
+                       tdnto->update_effective_elec();
                }
              } 
-             if (proj_hole)
+             if (proj_hole && !sorted_hole)
                   tdnto->proj_hole_orbital();
+             if (proj_hole && sorted_hole)
+                  tdnto->proj_sorted_hole_orbital();
+             //if (proj_effelec)
+             //     tdnto->proj_effective_elec_orbital();
              if (proj_elec)
                   tdnto->proj_elec_orbital();  
              //if (save_hole)

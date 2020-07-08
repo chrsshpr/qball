@@ -95,6 +95,31 @@ void TDNaturalOrbital::update_hole()
   ortho.gemm('c','n',1.0,ref_,nto_coeff,0.0);
   hole_coeff.gemm('n','n',1.0,ref_,ortho,0.0);
 }
+void TDNaturalOrbital::update_effective_elec()
+{
+   // in current implementary we require projempty = no of occupied oribitals
+   ComplexMatrix & elec_coeff = electron->sd(0,0)->c();
+   int nvir = (s_.proj_wf_virtual)->sd(0,0)->c().n()-n;
+   ComplexMatrix vir_coeff(ctxt_,m,nvir,mb,nb);
+   vir_coeff.getsub(s_.proj_wf_virtual->sd(0,0)->c(),m,nvir,0,n);
+   ComplexMatrix tmp(ctxt_,n,nvir,nb,nb);
+   tmp.gemm('c','n',1.0,nto_coeff,vir_coeff,0.0);
+   ComplexMatrix ortho(ctxt_,nvir,nvir,nb,nb);  
+   ComplexMatrix phase(ortho);
+
+   ortho.gemm('c','n',-1.0,tmp,tmp,0.0);
+   tmp.clear();
+   valarray<double> eig_;
+   
+   eig_.resize(nvir);
+   ortho.heev('l',eig_,phase); 
+   
+   //ComplexMatrix tmp_result(ctxt_,m,nvir,mb,nb);
+   elec_coeff.gemm('n','n',1.0,vir_coeff,phase,0.0);
+   //vir_coeff.print(cout);
+   //
+
+}
 void TDNaturalOrbital::update_elec()
 {
    ComplexMatrix & elec_coeff = electron->sd(0,0)->c();
@@ -155,7 +180,67 @@ void TDNaturalOrbital::print_nto_orbital(int m,string filename)
    print_orbital(&wftmpr[0],filename);
 
 }
+void TDNaturalOrbital::proj_sorted_hole_orbital()
+{
 
+   ComplexMatrix occ_coeff(ctxt_,m,n,mb,nb);
+   occ_coeff.getsub(s_.proj_wf_virtual->sd(0,0)->c(),m,n,0,0);
+   ComplexMatrix proj_hole(ctxt_,n,n,nb,nb);
+   proj_hole.clear();
+   proj_hole.gemm('c','n',1.0,occ_coeff,hole_coeff,0.0);
+   int hole_index1 = s_.ctrl.holeindex1;
+   int hole_index2 = s_.ctrl.holeindex2;
+   if ( hole_index1 ==-1 &&  hole_index2 == -1)
+   {
+      hole_index1 = 0;
+      hole_index2 = n;
+   }
+   Context ctxtl(1,1);
+
+   ComplexMatrix t(ctxtl,n,n);
+   t.getsub(proj_hole,n,n,0,0);
+   if ( ctxt_.oncoutpe() )
+   {
+         if (hole_index1== hole_index2)
+         {
+             cout << " <hole_projection index=\"" << hole_index1 << "\">" << endl;
+             for (int i =0 ; i <n ; i++)
+             {
+                cout.setf(ios::fixed, ios::floatfield);
+                cout.setf(ios::right, ios::adjustfield);
+                double pop = norm(t[hole_index1*n+i]) /nto_[hole_index1];
+                cout << "   <population=\"" << setprecision(6) << setw(12) << pop << " \"/>"<<endl;
+            }
+            cout << " </hole_projection>" << endl;
+         }
+         else
+         {
+             int size = hole_index2-hole_index1;
+             cout << " <hole_projection index=\"";
+             for (int i =hole_index1 ; i <hole_index2 ; i++)
+             {
+                  cout<<i<<"\t";
+             }
+             cout<<endl;
+             for (int j =0 ; j <n ; j++)
+             {
+
+                cout.setf(ios::fixed, ios::floatfield);
+                cout.setf(ios::right, ios::adjustfield);
+                cout << "   <population=\"";
+                for (int i = hole_index1 ; i < hole_index2 ; i++)
+                {
+                   double pop = norm(t[i*n+j])/nto_[i] ;
+                   cout<<setprecision(6) << setw(12) << pop ;
+                }
+                cout << " \"/>"<<endl;
+            }
+
+
+         }
+
+   }
+}
 void TDNaturalOrbital::proj_hole_orbital()
 {
   
@@ -251,7 +336,7 @@ void TDNaturalOrbital::proj_elec_orbital()
              {
                 cout.setf(ios::fixed, ios::floatfield);
                 cout.setf(ios::right, ios::adjustfield);
-                double pop = pow(norm(t[elec_index1*nvir+i]),2) ;
+                double pop = norm(t[elec_index1*nvir+i]) ;
                 cout << "   <population=\"" << setprecision(6) << setw(12) << pop << " \"/>"<<endl;
             }
             cout << " </elec_projection>" << endl;
