@@ -85,7 +85,7 @@ class NaturalOrbital: public Var
                s->ctrl.holeindex1=atoi(argv[3]);
                s->ctrl.holeindex2=atoi(argv[4]);
             }                   
-            if (w=="sorted_hole")s->ctrl.sorted_hole= true;
+            if (w=="-sorted_hole")s->ctrl.sorted_hole= true;
        }
        if (w == "-electron"||w == "-effective_electron")
        {
