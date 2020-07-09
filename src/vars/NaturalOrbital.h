@@ -70,7 +70,7 @@ class NaturalOrbital: public Var
        string w = argv[2];
        //if (w = "-sorted")
       //  s->ctrl.natural_orbital_sorted= true;
-       if (w == "-hole"|| w=="sorted_hole")
+       if (w == "-hole"|| w=="-sorted_hole")
        {
             
             s->ctrl.projhole = true;
