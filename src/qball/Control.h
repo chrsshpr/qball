@@ -156,7 +156,7 @@ struct Control
   int saveholefreq,saveelecfreq,saventofreq;
   int holeindex,elecindex,ntoindex,holeindex1,holeindex2,elecindex1,elecindex2;
   string saveholefilebase,saveelecfilebase,saventofilebase;
-  bool natural_orbital,projelec,projhole;
+  bool natural_orbital,sorted_hole,projelec,projhole,eff_elec;
   D3vector sine_field;
   bool  compute_sine_field ;
   bool saveholestate;
