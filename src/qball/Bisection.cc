@@ -22,8 +22,8 @@
 #include <qball/FourierTransform.h>
 #include <complex>
 //#define TIMING 
-#define DEBUG
-#define DEBUG_PRINT_MAT
+//#define DEBUG
+//#define DEBUG_PRINT_MAT
 using namespace std;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -179,7 +179,7 @@ Bisection::Bisection(const SlaterDet& sd, const int nlevels[3])
   }
 
   localization_.resize(nst_);
-  // safe here
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -212,7 +212,7 @@ void Bisection::compute_transform(const SlaterDet& sd)
   {
     ft_->backward(c.cvalptr(c.mloc()*n),&wftmp[0]);
     // pointers to rmat
-    vector<complex<double> *> p_rmat( ndiv_[0]*ndiv_[1] ); 
+    vector<complex<double> *> p_rmat( ndiv_[0]*ndiv_[1] );
     for (int iproj=0; iproj<ndiv_[0]*ndiv_[1]; iproj++)
     {
       int index = n * rmat_[iproj]->mloc();
@@ -460,7 +460,6 @@ void Bisection::compute_localization(double epsilon)
         localization_[n] += (1<<(2*imat)) + (1<<(2*imat+1));
     }
   }
-#ifdef DEBUG
   // print localization vector and number of overlaps (including self)
   // for each state
   if ( ctxt_.onpe0() )
@@ -474,16 +473,15 @@ void Bisection::compute_localization(double epsilon)
         if ( overlap(i,j) )
           count++;
       }
-      cout << "localization[" << i << "]: "
-           << localization_[i] << " "
-           << bitset<30>(localization_[i]) << "  overlaps: "
-           << count << endl;
+      //cout << "localization[" << i << "]: "
+          // << localization_[i] << " "
+           //<< bitset<30>(localization_[i]) << "  overlaps: "
+           //<< count << endl;
       sum += count;
     }
-    cout << "total overlaps: " << sum << " / " << nst_*nst_
+	 cout << "total overlaps: " << sum << " / " << nst_*nst_
          << " = " << ((double) sum)/(nst_*nst_) << endl;
   }
-#endif
 
   // broadcast localization to all tasks to ensure consistency
   MPI_Bcast( (void *) &localization_[0], localization_.size(),
@@ -550,19 +548,19 @@ bool Bisection::check_amat(const ComplexMatrix &c)
     }
   }
 
-	  // compute matrices B_k = <wf|dwf>
-	  vector<ComplexMatrix*> bmat(nmat_);
-	  for ( int k = 0; k < bmat.size(); k++ )
-	  {
-	    bmat[k] = new ComplexMatrix(c.context(),c.n(),c.n(),c.nb(),c.nb());
-	  }
-	  //DoubleMatrix c_proxy(c);
-	  //DoubleMatrix cd_proxy(cd);
+  // compute matrices B_k = <wf|dwf>
+  vector<ComplexMatrix*> bmat(nmat_);
+  for ( int k = 0; k < bmat.size(); k++ )
+  {
+    bmat[k] = new ComplexMatrix(c.context(),c.n(),c.n(),c.nb(),c.nb());
+  }
+  //DoubleMatrix c_proxy(c);
+  //DoubleMatrix cd_proxy(cd);
 
-	  vector<complex<double> > wftmp(ft_->np012loc());
-	  complex<double> *f = &wftmp[0];
+  vector<complex<double> > wftmp(ft_->np012loc());
+  complex<double> *f = &wftmp[0];
 
-	  // compute matrices A at all levels
+  // compute matrices A at all levels
   for ( int l=0 , imat=0; l < nlevelsmax_; l++ )
   {
     // x direction
@@ -665,12 +663,12 @@ bool Bisection::check_amat(const ComplexMatrix &c)
   }
   return true;
 }
+
 ////////////////////////////////////////////////////////////////////////////////
 /*void Bisection::trim_amat(const vector<complex<double>>& occ)
 {
   // set to zero the matrix elements of the matrices amat_[k] if they couple
   // states with differing occupation numbers
-
   const double trim_tol = 1.e-6;
   // check if all occupation numbers are the same
   double occ_max = 0.0, occ_min = 2.0;
@@ -682,7 +680,6 @@ bool Bisection::check_amat(const ComplexMatrix &c)
   // return if all occupation numbers are equal
   if ( fabs(occ_max-occ_min) < trim_tol )
     return;
-
   const int mloc = amat_[0]->mloc();
   const int nloc = amat_[0]->nloc();
   // loop over elements local to this task
@@ -692,7 +689,6 @@ bool Bisection::check_amat(const ComplexMatrix &c)
     for ( int j = 0; j < nloc; j++ )
     {
       const int jglobal = amat_[0]->jglobal(j);
-
       const int ival = i + mloc * j;
       if ( fabs(occ[iglobal] - occ[jglobal]) > trim_tol )
         for ( int k = 0; k < amat_.size(); k++ )
