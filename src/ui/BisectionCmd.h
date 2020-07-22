@@ -100,10 +100,10 @@ class BisectionCmd : public Cmd
     {
       SlaterDet& sd = *wf.sd(0,0);
       Bisection bisection(sd,nLevels);
-      const int maxsweep = 20;
+      const int maxsweep = 500;
       const double tol = 1.e-8;
       tm.start();
-      bisection.compute_transform(sd,maxsweep,tol);
+      bisection.compute_transform(sd);
       bisection.compute_localization(epsilon);
       bisection.forward(sd);
       tm.stop();

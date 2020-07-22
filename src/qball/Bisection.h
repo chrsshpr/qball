@@ -60,9 +60,7 @@ class Bisection
     // a matrices
     int nmat_;
     std::vector<ComplexMatrix*> amat_;
-    std::vector<std::vector<complex<double>> > adiag_; 
-    //std::vector<std::vector<double> > adiag_real_;
-    //std::vector<std::vector<double> > adiag_imag_;
+    std::vector<std::vector<std::complex<double> > > adiag_; 
     ComplexMatrix *u_;
 
     // test function
@@ -72,7 +70,7 @@ class Bisection
   public:
 
     Bisection(const SlaterDet& sd, const int nlevels[3]);
-    void compute_transform(const SlaterDet& sd, int maxsweep, double tol);
+    void compute_transform(const SlaterDet& sd);
     void compute_localization(double epsilon);
     void forward(SlaterDet& sd);
     void forward(ComplexMatrix& u, SlaterDet& sd);
