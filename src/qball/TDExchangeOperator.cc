@@ -1031,7 +1031,7 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
       *uc_[ispin] = bisection_[ispin]->u();
 
       bool distribute = s_.ctrl.debug.find("BISECTION_NODIST") == string::npos;
-      /*if ( distribute )
+      if ( distribute )
       {
         // define a permutation ordering states by increasing degree
         // permute states according to the order defined by the
@@ -1290,9 +1290,7 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
       {
         if ( gcontext_.onpe0() )
           cout << " ExchangeOperator: bisection distribution disabled" << endl;
-      } */// if distribute
-      //if ( gcontext_.onpe0() )
-          //cout << " ExchangeOperator: bisection distribution disabled" << endl;
+      } // if distribute
 
 #ifdef TIMING
       Timer tmbfwd;
