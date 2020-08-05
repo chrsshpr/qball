@@ -38,7 +38,7 @@ class BlHF : public Var
   {
     if ( argc != 4 )
     {
-      //if ( ui->onpe0() )
+      if ( ui->oncoutpe() )
       cout << " blHF takes 3 integer values" << endl;
       return 1;
     }
@@ -48,7 +48,7 @@ class BlHF : public Var
     int v2 = atoi(argv[3]);
     if ( v0 < 0 || v1 < 0 || v2 < 0 || v0 > 5 || v1 > 5 || v2 > 5 )
     {
-      //if ( ui->onpe0() )
+      if ( ui->oncoutpe() )
         cout << " blHF values must be in [0,5]" << endl;
       return 1;
     }

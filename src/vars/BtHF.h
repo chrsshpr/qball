@@ -38,7 +38,7 @@ class BtHF : public Var
   {
     if ( argc != 2 )
     {
-      //if ( ui->onpe0() )
+      if ( ui->oncoutpe() )
       cout << " btHF takes only one value" << endl;
       return 1;
     }
@@ -46,7 +46,7 @@ class BtHF : public Var
     double v = atof(argv[1]);
     if ( v >= 1.0 || v < 0.0 )
     {
-      //if ( ui->onpe0() )
+      if ( ui->oncoutpe() )
         cout << " btHF value must be in [0,1)" << endl;
       return 1;
     }
