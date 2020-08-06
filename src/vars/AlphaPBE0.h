@@ -44,10 +44,10 @@ class AlphaPBE0 : public Var
     }
 
     double v = atof(argv[1]);
-    if ( v < 0.0 || v >= 1.0)
+    if ( v < 0.0 || v > 1.0)
     {
       if ( ui->oncoutpe() )
-        cout << " alpha_PBE0 must be [0,1)" << endl;
+        cout << " alpha_PBE0 must be [0,1]" << endl;
       return 1;
     }
 
