@@ -33,11 +33,12 @@
 #include "FourierTransform.h"
 #include <math/blas.h> // daxpy, dcopy
 #include <cassert>
+#include <Sample.h>
 using namespace std;
 
 ////////////////////////////////////////////////////////////////////////////////
-XCPotential::XCPotential(ChargeDensity& cd, const string functional_name):
-    cd_(cd), ctxt_(cd.vcontext()), vft_(*cd_.vft()), vbasis_(*cd_.vbasis()),
+XCPotential::XCPotential(ChargeDensity& cd, const string functional_name, const Sample& s):
+    cd_(cd), ctxt_(cd.vcontext()), vft_(*cd_.vft()), vbasis_(*cd_.vbasis()), s_(s),
     cd_ecalc_(cd)
 {
    tddft_involved_ = false;
@@ -45,8 +46,8 @@ XCPotential::XCPotential(ChargeDensity& cd, const string functional_name):
 }
 ////////////////////////////////////////////////////////////////////////////////
 // separate constructor for TDDFT runs
-XCPotential::XCPotential(ChargeDensity& cd, const string functional_name, ChargeDensity& cd_ecalc):
-  cd_(cd), ctxt_(cd.vcontext()), vft_(*cd_.vft()), vbasis_(*cd_.vbasis()), cd_ecalc_(cd_ecalc)
+XCPotential::XCPotential(ChargeDensity& cd, const string functional_name, ChargeDensity& cd_ecalc, const Sample& s):
+  cd_(cd), ctxt_(cd.vcontext()), vft_(*cd_.vft()), vbasis_(*cd_.vbasis()), s_(s), cd_ecalc_(cd_ecalc)
 {
    tddft_involved_ = true;
    initialize(functional_name);
@@ -94,6 +95,15 @@ void XCPotential::initialize(string functional_name_input)
         xcf_ = new BLYPFunctional(cd_.xcrhor);
      else
         xcf_ = new BLYPFunctional(cd_.rhor);
+  }
+  else if ( functional_name == "PBE0" ) {
+     const double x_coeff = 1.0 - s_.ctrl.alpha_PBE0;
+     //const double x_coeff = 0.75; 
+     const double c_coeff = 1.0;
+     if (cd_.nlcc())
+        xcf_ = new PBEFunctional(cd_.xcrhor,x_coeff,c_coeff);
+     else
+        xcf_ = new PBEFunctional(cd_.rhor,x_coeff,c_coeff);
   }
   //YY
  else if ( functional_name == "LIBXC" )

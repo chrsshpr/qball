@@ -2,6 +2,7 @@ include $(srcdir)/../common-rules.make
 
 noinst_HEADERS =                            \
 	AtomsDyn.h                          \
+	AlphaPBE0.h			    \
         AbsorbingPotentialVar.h             \
 	BlHF.h 				    \
 	BtHF.h 				    \

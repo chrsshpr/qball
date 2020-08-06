@@ -71,15 +71,16 @@ class Xc : public Var
       return 1;
     }
     
-    else if ( !( v == "LDA" || v == "PBE" || v == "PBEsol" || v == "PBErev" || v == "BLYP" ) )
+    else if ( !( v == "LDA" || v == "PBE" || v == "PBEsol" || v == "PBErev" || v == "BLYP" || v == "HF" || v == "PBE0") )
     {
       if ( ui->oncoutpe() )
-        cout << " <ERROR> xc must be LDA, PBE, PBEsol, PBErev or BLYP </ERROR>" << endl;
+        cout << " <ERROR> xc must be LDA, PBE, PBEsol, PBErev , BLYP, HF or PBE0 </ERROR>" << endl;
       return 1;
     }
-
+        
     s->ctrl.xc= v;
-    
+    if (v=="HF") s->ctrl.hf= 1.0;
+    //if (v=="PBE0") s->ctrl.hf= 0.25;
     return 0;
   } //YY Allow LIBXC
 
@@ -93,7 +94,7 @@ class Xc : public Var
      return st.str();
   }
 
-  Xc(Sample *sample) : s(sample) { s->ctrl.xc = "LDA"; };
+  Xc(Sample *sample) : s(sample) { s->ctrl.xc = "LDA";s->ctrl.hf = 0.0; };
 };
 #endif
 

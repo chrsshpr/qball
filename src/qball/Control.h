@@ -162,6 +162,7 @@ struct Control
   int blHF[3];
   double btHF;
   double hf;
+  double alpha_PBE0;
 };
 #endif
 

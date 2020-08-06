@@ -37,7 +37,6 @@
 #include <functionals/PBESolFunctional.h>
 #include <functionals/PBERevFunctional.h>
 #include <functionals/BLYPFunctional.h>
-
 #ifdef HAVE_LIBXC //YY
 #include <functionals/LIBXCFunctional.h>
 #endif //YY
@@ -49,11 +48,13 @@ using namespace std;
 
 class Basis;
 class FourierTransform;
+class Sample;
 
 class XCPotential
 {
   private:
-  
+ 
+  const Sample& s_;
   const Context& ctxt_;  
   ChargeDensity& cd_;
   ChargeDensity& cd_ecalc_;
@@ -77,8 +78,8 @@ class XCPotential
   public:
 
   const XCFunctional* xcf() { return xcf_; }
-  XCPotential(ChargeDensity& cd, const string functional_name);
-  XCPotential(ChargeDensity& cd, const string functional_name, ChargeDensity& cd_ecalc);
+  XCPotential(ChargeDensity& cd, const string functional_name, const Sample& s);
+  XCPotential(ChargeDensity& cd, const string functional_name, ChargeDensity& cd_ecalc, const Sample& s);
   ~XCPotential();
   void update(vector<vector<double> >& vr, vector<vector<double> >& vxc_tau);
   void update_exc(vector<vector<double> >& vr);

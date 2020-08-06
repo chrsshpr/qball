@@ -98,7 +98,9 @@ class EnergyFunctional
   double eharris_;  // terms for Harris-Foulkes estimate for convergence detection
   double evdw_; //van der Waals energy
   double hf_contribution;
+  double hf_pbe0; 
   bool not_hartree_fock;
+  //bool not_pbe0;
   vector<double> fion_vdw_;
   
   valarray<double> sigma_ekin,sigma_econf,sigma_eps,sigma_ehart,sigma_exc, sigma_vdw,
