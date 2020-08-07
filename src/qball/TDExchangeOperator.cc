@@ -1395,8 +1395,7 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
     }
     // local occupation numbers
     const double* occ = sd.occ_ptr();
-    for ( int i = 0; i < sd.nstloc(); i++ )  occ_kj_[i]=2.0;
-        //occ_kj_[i]=occ[c.jglobal(i)];
+    for ( int i = 0; i < sd.nstloc(); i++ )  occ_kj_[i]=occ[c.jglobal(i)];
        //{occ_kj_[i]=sd.occ(c.jglobal(i));
        //occ_kj_[i]=2.0;
     //}
