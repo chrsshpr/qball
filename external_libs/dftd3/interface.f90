@@ -27,7 +27,8 @@ module dftd3_data
   integer, parameter :: PBE    = 1;
   integer, parameter :: PBEsol = 2;
   integer, parameter :: PBErev = 3;
-  integer, parameter :: BLYP   = 4;
+  integer, parameter :: PBE0   = 4;
+  integer, parameter :: BLYP   = 5;
   
   type(dftd3_calc) :: calc
   
@@ -48,6 +49,8 @@ subroutine f90_dftd3_init(func_id)
   select case(func_id)
   case(PBE)
     func = 'pbe'
+  case(PBE0)
+    func = 'pbe0'
   case(PBEsol)
     func = 'pbesol'
   case(PBErev)

@@ -35,7 +35,8 @@ namespace dftd3_functional {
   const int PBE    = 1;
   const int PBEsol = 2;
   const int PBErev = 3;
-  const int BLYP   = 4;
+  const int PBE0   = 4;
+  const int BLYP   = 5;
 }
 
 extern "C" {
