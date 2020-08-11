@@ -10,6 +10,7 @@ noinst_HEADERS =                            \
 	PBEFunctional.h                     \
 	PBERevFunctional.h                  \
 	PBESolFunctional.h                  \
+	RSHFunctional.h 		    \
 	XCFunctional.h
 
 libfunctionals_a_SOURCES =                  \
@@ -18,4 +19,5 @@ libfunctionals_a_SOURCES =                  \
         LIBXCFunctional.cc                  \
 	PBEFunctional.cc                    \
 	PBERevFunctional.cc                 \
+	RSHFunctional.cc 		    \
 	PBESolFunctional.cc
