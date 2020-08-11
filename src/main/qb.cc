@@ -100,6 +100,9 @@ using namespace std;
 
 #include <vars/AtomsDyn.h>
 #include <vars/AlphaPBE0.h>
+#include <vars/AlphaRSH.h>
+#include <vars/BetaRSH.h>
+#include <vars/MuRSH.h> 
 #include <vars/Cell.h>
 #include <vars/CellDyn.h>
 #include <vars/CellLock.h>
@@ -374,6 +377,9 @@ int main(int argc, char **argv, char **envp)
 
   ui->addVar(new AtomsDyn(s));
   ui->addVar(new AlphaPBE0(s));
+  ui->addVar(new AlphaRSH(s));
+  ui->addVar(new BetaRSH(s));
+  ui->addVar(new MuRSH(s));
   ui->addVar(new BlHF(s));
   ui->addVar(new BtHF(s));
   ui->addVar(new Cell(s));

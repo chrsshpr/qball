@@ -3,7 +3,9 @@ include $(srcdir)/../common-rules.make
 noinst_HEADERS =                            \
 	AtomsDyn.h                          \
 	AlphaPBE0.h			    \
+        AlphaRSH.h 			    \
         AbsorbingPotentialVar.h             \
+	BetaRSH.h			    \
 	BlHF.h 				    \
 	BtHF.h 				    \
 	CellDyn.h                           \
@@ -47,6 +49,7 @@ noinst_HEADERS =                            \
 	MatrixLoc.h                         \
 	MDIter.h                            \
 	Memory.h                            \
+	MuRSH.h 			    \
 	NA_overlaps.h                       \
 	Nempty.h                            \
 	NetCharge.h                         \

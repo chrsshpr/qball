@@ -163,6 +163,9 @@ struct Control
   double btHF;
   double hf;
   double alpha_PBE0;
+  double alpha_RSH;
+  double beta_RSH;
+  double mu_RSH;
 };
 #endif
 
