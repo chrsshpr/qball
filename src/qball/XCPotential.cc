@@ -105,6 +105,12 @@ void XCPotential::initialize(string functional_name_input)
      else
         xcf_ = new PBEFunctional(cd_.rhor,x_coeff,c_coeff);
   }
+  else if ( functional_name == "RSH" ) {
+     if (cd_.nlcc())
+       xcf_ = new RSHFunctional(cd_.xcrhor,s_.ctrl.alpha_RSH,s_.ctrl.beta_RSH,s_.ctrl.mu_RSH);
+     else
+       xcf_ = new RSHFunctional(cd_.rhor,s_.ctrl.alpha_RSH,s_.ctrl.beta_RSH,s_.ctrl.mu_RSH);
+  }
   //YY
  else if ( functional_name == "LIBXC" )
   { 

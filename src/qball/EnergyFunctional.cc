@@ -156,6 +156,8 @@ EnergyFunctional::EnergyFunctional( Sample& s, const Wavefunction& wf, ChargeDen
   hf_contribution=s_.ctrl.hf;
   if (s_.ctrl.xc=="HF")   xop_= new ExchangeOperator(s_, hf_contribution, hf_contribution, 0.0);
   if (s_.ctrl.xc=="PBE0")   xop_= new ExchangeOperator(s_, hf_pbe0, hf_pbe0, 0.0);
+  if (s_.ctrl.xc=="RSH")   xop_= new ExchangeOperator(s_, s.ctrl.alpha_RSH, s.ctrl.beta_RSH, s.ctrl.mu_RSH);
+
   // check mgga YY
   //s_.ctrl.mgga = (xcp_->xcf()->ismGGA());
   if (s_.ctrl.has_absorbing_potential) {
@@ -301,6 +303,8 @@ EnergyFunctional::EnergyFunctional( Sample& s, const Wavefunction& wf, ChargeDen
       functional = dftd3_functional::PBErev;
     } else if (s_.ctrl.xc == "BLYP") {
       functional = dftd3_functional::BLYP;
+    } else if (s_.ctrl.xc == "PBE0") {
+      functional = dftd3_functional::PBE0;
     } else {
       cerr << "Unknown DFT-D3 parametrization for the XC functional '"<< s_.ctrl.xc << "'."<< endl;
       exit(1);
@@ -434,7 +438,7 @@ void EnergyFunctional::update_vhxc(void) {
   abp_->update(vabs_r); } // YY
   if (not_hartree_fock) exc_ = xcp_->exc();
   if (s_.ctrl.xc=="HF") exc_ = xop_->update_operator(false);
-  if (s_.ctrl.xc=="PBE0")
+  if (s_.ctrl.xc=="PBE0" || s_.ctrl.xc=="RSH")
   {
     double ex_hf = xop_->update_operator(false);
     exc_ += ex_hf;
@@ -1068,14 +1072,14 @@ void EnergyFunctional::update_harris(void) {
   if (s_.ctrl.has_absorbing_potential && s_.ctrl.tddft_involved) {
   abp_->update(vabs_r); } // YY
   if (not_hartree_fock)  eharris_ = xcp_->exc();
-  //if (hf_contribution >0) eharris_ =  xop_->update_operator(false);
-  if (s_.ctrl.xc=="HF" || s_.ctrl.xc=="PBE0") eharris_ =  xop_->update_operator(false);
-/*  if (s_.ctrl.xc=="PBE0") 
+  if (s_.ctrl.xc=="HF") eharris_ =  xop_->update_operator(false);
+  //if (s_.ctrl.xc=="HF" || s_.ctrl.xc=="PBE0" || s_.ctrl.xc=="RSH") eharris_ =  xop_->update_operator(false);
+  if (s_.ctrl.xc=="PBE0" || s_.ctrl.xc=="RSH") 
   {
     double eharris_hf = xop_->update_operator(false);
     eharris_ += eharris_hf;
   }
-*/ 
+
 
   // compute local potential energy: 
   // integral of el. charge times ionic local pot.
@@ -1156,7 +1160,7 @@ void EnergyFunctional::update_exc_ehart_eps(void)
   }
   tmap["exc"].stop();
   if (s_.ctrl.xc=="HF") exc_ =  xop_->update_operator(false);
-  if (s_.ctrl.xc=="PBE0")
+  if (s_.ctrl.xc=="PBE0" || s_.ctrl.xc=="RSH")
   {
     double ex_hf = xop_->update_operator(false);
     exc_ += ex_hf;
@@ -1531,7 +1535,7 @@ double EnergyFunctional::energy(Wavefunction& psi, bool compute_hpsi, Wavefuncti
   // Stress from exchange-correlation
   if ( compute_stress ) {
      if (not_hartree_fock) xcp_->compute_stress(sigma_exc);
-     if (s_.ctrl.xc=="HF" || s_.ctrl.xc=="PBE0") xop_->add_stress(sigma_exc);
+     if (s_.ctrl.xc=="HF" || s_.ctrl.xc=="PBE0" || s_.ctrl.xc=="RSH") xop_->add_stress(sigma_exc);
   }
   
   
@@ -1802,7 +1806,7 @@ double EnergyFunctional::energy(Wavefunction& psi, bool compute_hpsi, Wavefuncti
         }
       }
     }
-    if (s_.ctrl.xc=="HF" || s_.ctrl.xc=="PBE0") xop_->apply_operator(dwf);
+    if (s_.ctrl.xc=="HF" || s_.ctrl.xc=="PBE0" || s_.ctrl.xc=="RSH") xop_->apply_operator(dwf);
 
     tmap["hpsi"].stop();
   } // if compute_hpsi
