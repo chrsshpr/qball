@@ -957,10 +957,17 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
   for ( int ispin = 0; ispin < wfc_.nspin(); ispin++ )
   {
     SlaterDet& sd = *(wfc_.sd(ispin,0));
+    // use copy to correctly read empty state occupations 
+    SlaterDet& sd_c = *(wf.sd(ispin,0));
     ComplexMatrix& c = sd.c();
+    //ComplexMatrix& c1 = sd1.c();
     const int nst = sd.nst();
-    ComplexMatrix sample(gcontext_,c.n(),c.n(),c.nb(),c.nb());;
-    
+    const Context &ctxt = s_.wf.sd(0,0)->c().context();
+    int nb = c.nb();
+    ComplexMatrix test(ctxt,nst,nst,nb,nb);
+    //test.gemm('c','n',1.0,sd.c(),sd1.c(),0.0);
+    //test.print(cout);
+
     // if using bisection, localize the wave functions
     if ( use_bisection_ )
     {
@@ -1031,7 +1038,7 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
       *uc_[ispin] = bisection_[ispin]->u();
 
       bool distribute = s_.ctrl.debug.find("BISECTION_NODIST") == string::npos;
-      if ( distribute )
+      /*if ( distribute )
       {
         // define a permutation ordering states by increasing degree
         // permute states according to the order defined by the
@@ -1290,7 +1297,7 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
       {
         if ( gcontext_.onpe0() )
           cout << " ExchangeOperator: bisection distribution disabled" << endl;
-      } // if distribute
+      } */// if distribute
 
 #ifdef TIMING
       Timer tmbfwd;
@@ -1320,8 +1327,11 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
 #endif 
     } // if use_bisection_
 
-    tm.start();
+    //SlaterDet& sd1 = *(wf.sd(ispin,0));
+    //test.gemm('c','n',1.0,sd.c(),sd1.c(),0.0);
+    //test.print(cout);
 
+    tm.start();
     // compute exchange
 
     // real-space local states -> statej_[i][ir]
@@ -1338,7 +1348,6 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
 
     SlaterDet& dsd = *(dwf->sd(ispin,0));
     ComplexMatrix& dc = dsd.c();
-
     if (dwf)
     {
       // reset real space derivatives dstatej_[i][ir]
@@ -1387,16 +1396,14 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
       }
     }
     // local occupation numbers
-    const double* occ = sd.occ_ptr();
+    const double* occ = sd_c.occ_ptr(); //sd copy allows for usage of empty states 
     for ( int i = 0; i < sd.nstloc(); i++ )  
-      occ_kj_[i]=2.0;
-      //occ_kj_[i]=occ[c.jglobal(i)];
-       //{occ_kj_[i]=sd.occ(c.jglobal(i));
-       //occ_kj_[i]=2.0;
+      //occ_kj_[i]=2.0;
+      occ_kj_[i]=occ[c.jglobal(i)];
+      //occ_kj_[i]=sd.occ(c.jglobal(i));
     //}
     // number of states to be sent
     nStatesKpi_ = sd.nstloc();
-
     // occupation numbers of circulating states
     for ( int i = 0; i < nStatesKpi_; i++ )
       occ_ki_[i] = occ_kj_[i];

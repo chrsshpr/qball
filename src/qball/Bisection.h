@@ -65,7 +65,7 @@ class Bisection
 
     // test function
     bool check_amat(const ComplexMatrix &c);
-    //void trim_amat(const std::vector<double>& occ);
+    void trim_amat(const std::vector<double>& occ);
 
   public:
 

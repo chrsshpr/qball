@@ -381,7 +381,7 @@ void Bisection::compute_transform(const SlaterDet& sd)
 
   // set to zero matrix elements of the matrices amat_[i] if they couple
   // states with differing occupation numbers
-  //trim_amat(occ);
+  trim_amat(occ);
 
 #ifdef DEBUG_PRINT_MAT
   for ( int k = 0; k < amat_.size(); k++ )
@@ -665,7 +665,7 @@ bool Bisection::check_amat(const ComplexMatrix &c)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-/*void Bisection::trim_amat(const vector<complex<double>>& occ)
+void Bisection::trim_amat(const vector<double>& occ)
 {
   // set to zero the matrix elements of the matrices amat_[k] if they couple
   // states with differing occupation numbers
@@ -696,7 +696,7 @@ bool Bisection::check_amat(const ComplexMatrix &c)
     }
   }
 }
-*/
+
 ////////////////////////////////////////////////////////////////////////////////
 bool Bisection::overlap(int i, int j) const
 {
