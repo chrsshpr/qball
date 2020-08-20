@@ -2162,7 +2162,7 @@ double ExchangeOperator::vint(double g2)
     const double fac = 0.25 / ( mu_sx_ * mu_sx_ );
     const double x = g2 * fac;
     if ( g2 == 0 )
-      // return only the finite limit as g2 -> 0
+      // return only the finite limit as g2 -> 0 //factor of two need when using complex basis 
       return - ( alpha_sx_ - beta_sx_ ) * fac * 2;
     else if ( g2 < 1.e-6 )
       // Use Taylor expansion of the regular part near origin
@@ -2199,7 +2199,7 @@ double ExchangeOperator::dvint(double g2)
     const double x = g2 * fac;
     const double third = 1.0 / 3.0;
     if ( g2 == 0 )
-      // return finite part of the limit only for g2 -> 0
+      // return finite part of the limit only for g2 -> 0 // factor of 2 needed when using complex basis 
       return ( alpha_sx_ - beta_sx_ ) * fac * fac;
     else if ( g2 < 1e-6 )
       // Use Taylor expansion of regular term near origin
