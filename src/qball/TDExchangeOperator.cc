@@ -1369,7 +1369,7 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
     // beta_sx*(1/r) + (alpha_sx-beta_sx)*erf(mu*r)/r
     // The coefficient of the long range term is alpha_sx
     // subtract alpha_sx * exp(-rc2*G^2)/G^2
-   if ( alpha_sx_ != 0.0 )
+    if ( alpha_sx_ != 0.0 )
     {
       for ( int ig = 0; ig < ngloc; ig++ )
       {
@@ -1816,7 +1816,7 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
     }
     // dc now contains the forces  
    // divergence corrections from long range Coulomb part
-if ( alpha_sx_ != 0.0 )
+    if ( alpha_sx_ != 0.0 )
     {
       const double integ = alpha_sx_ * 4.0 * M_PI * sqrt(M_PI) /
         ( 2.0 * rcut_ );
@@ -2150,7 +2150,7 @@ double ExchangeOperator::vint(double g2)
     return 0.0;
 
   // Treat the Coulomb potential case separately (alpha_sx_ == beta_sx_)
-  if ( alpha_sx_ == beta_sx_ )
+  if ( alpha_sx_ == beta_sx_ ) //|| (mu_sx_ !=0.0))
   {
     if ( g2 == 0 )
       return 0.0;
@@ -2163,7 +2163,7 @@ double ExchangeOperator::vint(double g2)
     const double x = g2 * fac;
     if ( g2 == 0 )
       // return only the finite limit as g2 -> 0
-      return - ( alpha_sx_ - beta_sx_ ) * fac;
+      return - ( alpha_sx_ - beta_sx_ ) * fac * 2;
     else if ( g2 < 1.e-6 )
       // Use Taylor expansion of the regular part near origin
       return alpha_sx_ / g2 + fac * beta_sx_ * ( 1.0 - 0.5 * x );
@@ -2185,7 +2185,7 @@ double ExchangeOperator::dvint(double g2)
     return 0.0;
 
   // Treat the Coulomb potential case separately (alpha_sx_ == beta_sx_)
-  if ( alpha_sx_ == beta_sx_ )
+  if ( alpha_sx_ == beta_sx_ ) //|| (mu_sx_ != 0.0))
   {
     // Coulomb potential with prefactor alpha_sx (= beta_sx)
     if ( g2 == 0 )
@@ -2200,7 +2200,7 @@ double ExchangeOperator::dvint(double g2)
     const double third = 1.0 / 3.0;
     if ( g2 == 0 )
       // return finite part of the limit only for g2 -> 0
-      return 0.5 * ( alpha_sx_ - beta_sx_ ) * fac * fac;
+      return ( alpha_sx_ - beta_sx_ ) * fac * fac;
     else if ( g2 < 1e-6 )
       // Use Taylor expansion of regular term near origin
       // return beta_sx_ * ( -0.5 + fac * g2 * third ) * fac * fac;
