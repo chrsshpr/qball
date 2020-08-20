@@ -433,7 +433,7 @@ void EnergyFunctional::update_vhxc(void) {
       vxc_tau[ispin][i] = 0.0; //YY
   
   //fill(v_r[ispin].begin(),v_r[ispin].end(),0.0);
-  if (not_hartree_fock)  xcp_->update(v_r, vxc_tau); //YY
+  if (not_hartree_fock)  xcp_->update(v_r,vxc_tau); //YY
   if (s_.ctrl.has_absorbing_potential && s_.ctrl.tddft_involved) {
   abp_->update(vabs_r); } // YY
   if (not_hartree_fock) exc_ = xcp_->exc();
@@ -1688,8 +1688,9 @@ double EnergyFunctional::energy(Wavefunction& psi, bool compute_hpsi, Wavefuncti
     ets_ = - psientropy * s_.ctrl.smearing_width * boltz;
   }
   etotal_ = ekin_ + econf_ + eps_ + enl_ + ecoul_ + exc_ + evdw_ + ets_ + epv_ + ehub_;
+  cout << etotal_ << " etotal_ " << " " << exc_ << " exc_" << endl;
 
-  //electric enthalpy term from applied electric field
+ //electric enthalpy term from applied electric field
   enthalpy_ = etotal_;
   eefield_ = 0.0;
   if ( el_enth_ )

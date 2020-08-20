@@ -44,10 +44,10 @@ class MuRSH : public Var
     }
 
     double v = atof(argv[1]);
-    if ( v < 0.0 || v > 1.0)
+    if ( v < 0.0 )
     {
       if ( ui->oncoutpe() )
-        cout << " mu_RSH must be [0,1]" << endl;
+        cout << " mu_RSH must be greater than 0.0" << endl;
       return 1;
     }
 
