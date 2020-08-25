@@ -157,6 +157,7 @@ EnergyFunctional::EnergyFunctional( Sample& s, const Wavefunction& wf, ChargeDen
   if (s_.ctrl.xc=="HF")   xop_= new ExchangeOperator(s_, hf_contribution, hf_contribution, 0.0);
   if (s_.ctrl.xc=="PBE0")   xop_= new ExchangeOperator(s_, hf_pbe0, hf_pbe0, 0.0);
   if (s_.ctrl.xc=="RSH")   xop_= new ExchangeOperator(s_, s.ctrl.alpha_RSH, s.ctrl.beta_RSH, s.ctrl.mu_RSH);
+  if (s_.ctrl.xc=="BHLYP")  xop_= new ExchangeOperator(s_, 0.50, 0.50, 0.0);
 
   // check mgga YY
   //s_.ctrl.mgga = (xcp_->xcf()->ismGGA());
@@ -438,7 +439,7 @@ void EnergyFunctional::update_vhxc(void) {
   abp_->update(vabs_r); } // YY
   if (not_hartree_fock) exc_ = xcp_->exc();
   if (s_.ctrl.xc=="HF") exc_ = xop_->update_operator(false);
-  if (s_.ctrl.xc=="PBE0" || s_.ctrl.xc=="RSH")
+  if (s_.ctrl.xc=="PBE0" || s_.ctrl.xc=="RSH" || s_.ctrl.xc=="BHLYP")
   {
     double ex_hf = xop_->update_operator(false);
     exc_ += ex_hf;
@@ -1074,7 +1075,7 @@ void EnergyFunctional::update_harris(void) {
   if (not_hartree_fock)  eharris_ = xcp_->exc();
   if (s_.ctrl.xc=="HF") eharris_ =  xop_->update_operator(false);
   //if (s_.ctrl.xc=="HF" || s_.ctrl.xc=="PBE0" || s_.ctrl.xc=="RSH") eharris_ =  xop_->update_operator(false);
-  if (s_.ctrl.xc=="PBE0" || s_.ctrl.xc=="RSH") 
+  if (s_.ctrl.xc=="PBE0" || s_.ctrl.xc=="RSH" || s_.ctrl.xc=="BHLYP") 
   {
     double eharris_hf = xop_->update_operator(false);
     eharris_ += eharris_hf;
@@ -1160,7 +1161,7 @@ void EnergyFunctional::update_exc_ehart_eps(void)
   }
   tmap["exc"].stop();
   if (s_.ctrl.xc=="HF") exc_ =  xop_->update_operator(false);
-  if (s_.ctrl.xc=="PBE0" || s_.ctrl.xc=="RSH")
+  if (s_.ctrl.xc=="PBE0" || s_.ctrl.xc=="RSH" || s_.ctrl.xc=="BHLYP")
   {
     double ex_hf = xop_->update_operator(false);
     exc_ += ex_hf;
@@ -1535,7 +1536,7 @@ double EnergyFunctional::energy(Wavefunction& psi, bool compute_hpsi, Wavefuncti
   // Stress from exchange-correlation
   if ( compute_stress ) {
      if (not_hartree_fock) xcp_->compute_stress(sigma_exc);
-     if (s_.ctrl.xc=="HF" || s_.ctrl.xc=="PBE0" || s_.ctrl.xc=="RSH") xop_->add_stress(sigma_exc);
+     if (s_.ctrl.xc=="HF" || s_.ctrl.xc=="PBE0" || s_.ctrl.xc=="RSH" || s_.ctrl.xc=="BHLYP") xop_->add_stress(sigma_exc);
   }
   
   
@@ -1807,7 +1808,7 @@ double EnergyFunctional::energy(Wavefunction& psi, bool compute_hpsi, Wavefuncti
         }
       }
     }
-    if (s_.ctrl.xc=="HF" || s_.ctrl.xc=="PBE0" || s_.ctrl.xc=="RSH") xop_->apply_operator(dwf);
+    if (s_.ctrl.xc=="HF" || s_.ctrl.xc=="PBE0" || s_.ctrl.xc=="RSH" || s_.ctrl.xc=="BHLYP") xop_->apply_operator(dwf);
 
     tmap["hpsi"].stop();
   } // if compute_hpsi
