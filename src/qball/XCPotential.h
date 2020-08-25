@@ -37,6 +37,7 @@
 #include <functionals/PBESolFunctional.h>
 #include <functionals/PBERevFunctional.h>
 #include <functionals/BLYPFunctional.h>
+#include <functionals/B3LYPFunctional.h>
 #include <functionals/BHLYPFunctional.h>
 #include <functionals/RSHFunctional.h> 
 #ifdef HAVE_LIBXC //YY

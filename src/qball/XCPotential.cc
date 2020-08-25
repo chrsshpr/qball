@@ -111,6 +111,12 @@ void XCPotential::initialize(string functional_name_input)
      else
        xcf_ = new RSHFunctional(cd_.rhor,s_.ctrl.alpha_RSH,s_.ctrl.beta_RSH,s_.ctrl.mu_RSH);
   }
+  else if ( functional_name == "B3LYP" ) {
+    if (cd_.nlcc())
+       xcf_ = new B3LYPFunctional(cd_.xcrhor);
+    else
+       xcf_ = new B3LYPFunctional(cd_.rhor);
+  }
   else if ( functional_name == "BHLYP" ) {
     if (cd_.nlcc())
        xcf_ = new BHLYPFunctional(cd_.xcrhor);
