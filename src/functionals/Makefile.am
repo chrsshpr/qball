@@ -5,6 +5,7 @@ lib_LIBRARIES =                             \
 
 noinst_HEADERS =                            \
 	BLYPFunctional.h                    \
+	BHLYPFunctional.h	            \
 	LDAFunctional.h                     \
         LIBXCFunctional.h                   \
 	PBEFunctional.h                     \
@@ -15,6 +16,7 @@ noinst_HEADERS =                            \
 
 libfunctionals_a_SOURCES =                  \
 	BLYPFunctional.cc                   \
+        BHLYPFunctional.cc                  \
 	LDAFunctional.cc                    \
         LIBXCFunctional.cc                  \
 	PBEFunctional.cc                    \

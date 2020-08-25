@@ -71,10 +71,10 @@ class Xc : public Var
       return 1;
     }
     
-    else if ( !( v == "LDA" || v == "PBE" || v == "PBEsol" || v == "PBErev" || v == "BLYP" || v == "HF" || v == "PBE0" || v == "RSH") )
+    else if ( !( v == "LDA" || v == "PBE" || v == "PBEsol" || v == "PBErev" || v == "BLYP" || v == "HF" || v == "PBE0" || v == "RSH" || v== "BHLYP") )
     {
       if ( ui->oncoutpe() )
-        cout << " <ERROR> xc must be LDA, PBE, PBEsol, PBErev , BLYP, HF, PBE0 or RSH </ERROR>" << endl;
+        cout << " <ERROR> xc must be LDA, PBE, PBEsol, PBErev , BLYP, BHLYP, HF, PBE0 or RSH </ERROR>" << endl;
       return 1;
     }
         
