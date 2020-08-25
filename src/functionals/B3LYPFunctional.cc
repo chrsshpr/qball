@@ -167,7 +167,7 @@ void B3LYPFunctional::excb3lyp(double rho, double grad,
   double ex_b88,vx1_b88,vx2_b88;
   double ec_lyp,vc1_lyp,vc2_lyp;
 
-  // VWn ex and ec 
+  // VWN ex and ec 
   exvwn(rho,ex_lda,vx_lda);
   ecvwn(rho,ec_lda,vc_lda);
 
@@ -218,7 +218,7 @@ void B3LYPFunctional::excb3lyp_sp(double rho_up, double rho_dn,
   double ec_lyp_up,ec_lyp_dn,vc1_lyp_up,vc1_lyp_dn,
          vc2_lyp_upup,vc2_lyp_dndn,vc2_lyp_updn,vc2_lyp_dnup;
 
-  // VWN ex and ex 
+  // VWN ex and ec 
   exvwn_sp(rho_up,rho_dn,ex_lda,vx_lda_up,vx_lda_dn);
   ecvwn_sp(rho_up,rho_dn,ec_lda,vc_lda_up,vc_lda_dn);
 

@@ -67,7 +67,7 @@ class B3LYPFunctional : public XCFunctional
     double *ec_up, double *ec_dn, double *vc1_up, double *vc1_dn,
     double *vc2_upup, double *vc2_dndn, double *vc2_updn, double *vc2_dnup);
    
-   // VWN ex and ex functions 
+   // VWN ex and ec functions 
    void alpha_c(const double rh, double &a, double &da);
    void x_unpolarized(const double rh, double &ex, double &vx);
    void c_unpolarized(const double rh, double &ec, double &vc);
