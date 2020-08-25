@@ -38,6 +38,7 @@ namespace dftd3_functional {
   const int PBE0   = 4;
   const int BHLYP  = 5; 
   const int BLYP   = 6;
+  const int B3LYP  = 7;
 }
 
 extern "C" {

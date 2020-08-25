@@ -307,6 +307,8 @@ EnergyFunctional::EnergyFunctional( Sample& s, const Wavefunction& wf, ChargeDen
       functional = dftd3_functional::BLYP;
     } else if (s_.ctrl.xc == "BHLYP") {
       functional = dftd3_functional::BHLYP;
+    } else if (s_.ctrl.xc == "B3LYP") {
+      functional = dftd3_functional::B3LYP;
     } else if (s_.ctrl.xc == "PBE0") {
       functional = dftd3_functional::PBE0;
     } else {

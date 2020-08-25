@@ -30,7 +30,7 @@ module dftd3_data
   integer, parameter :: PBE0   = 4;
   integer, parameter :: BHLYP  = 5;
   integer, parameter :: BLYP   = 6;
-  
+  integer, parameter :: B3LYP  = 7;  
   type(dftd3_calc) :: calc
   
 end module dftd3_data
@@ -60,6 +60,8 @@ subroutine f90_dftd3_init(func_id)
     func = 'bh_lyp'
   case(BLYP)
     func = 'b_lyp'
+  case(B3LYP)
+    func = 'b3_lyp'
   end select
   
   call dftd3_init(calc, input)
