@@ -61,6 +61,7 @@ cell_(sd.basis().cell()), ctxt_(sd.context()),  bm_(BasisMapping(sd.basis()))
     adiag_[k].resize(n);
   }
   u_ = new ComplexMatrix(ctxt_,n,n,nb,nb);
+  tmpmat_ = new ComplexMatrix(ctxt_,n,n,nb,nb);
 
   sdcosx_ = new SlaterDet(sd_);
   sdcosy_ = new SlaterDet(sd_);
@@ -78,6 +79,7 @@ TDMLWFTransform::~TDMLWFTransform(void)
     delete a_[k];
    } 
   delete u_;
+  delete tmpmat_; 
 
   delete sdcosx_;
   delete sdcosy_;
@@ -115,6 +117,7 @@ void TDMLWFTransform::update(void)
     adiag_[i].resize(c.n());
   }
   u_->resize(c.n(), c.n(), c.nb(), c.nb());
+  tmpmat_->resize(c.n(), c.n(), c.nb(), c.nb());
 
   // loop over all local states
   const int np0 = bm_.np0();
@@ -218,7 +221,7 @@ void TDMLWFTransform::compute_transform(void)
 {
   const int maxsweep = 100;
   const double tol = 1.e-8;
-  int nsweep = jade_complex(maxsweep,tol,a_,*u_,adiag_); 
+  int nsweep = jade_complex(maxsweep,tol,a_,*u_,*tmpmat_,adiag_); 
   // Joint approximate diagonalization step.
 }
 
@@ -325,6 +328,7 @@ D3vector TDMLWFTransform::dipole(void)
   D3vector sum(0.0,0.0,0.0);
   for ( int i = 0; i < sd_.nst(); i++ )
     sum -= sd_.occ(i) * center(i);
+    //sum -= 2 * center(i); 
   return sum;
 }
 
@@ -333,5 +337,6 @@ void TDMLWFTransform::apply_transform(SlaterDet& sd)
 {
   // proxy double matrix c. 
   ComplexMatrix c(sd.c());  //DCY
-  (sd.c()).gemm('n','n',1.0,c,*u_,0.0);
+  //(sd.c()).gemm('n','n',1.0,c,*u_,0.0);
+  (sd.c()).gemm('n','n',1.0,c,*tmpmat_,0.0);
 }
