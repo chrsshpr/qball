@@ -369,7 +369,7 @@ void Bisection::compute_transform(const SlaterDet& sd)
         // factor -2.0 in next line: G and -G 
         amat_[imat]->gemm('c','n',1.0,c_pz,c,0.0);
         // rank-1 update using first row of cd_proxy() and c_proxy
-        //amat_[imat]->zger(-1.0,c_pz,0,c,0);
+        amat_[imat]->zger(-1.0,c_pz,0,c,0);
         imat++;
       }
     }
@@ -412,7 +412,7 @@ void Bisection::compute_transform(const SlaterDet& sd)
   // diagonalize projectors
   const int maxsweep = 500;
   const double tol = 1.e-8;
-  int nsweep = jade_complex(maxsweep,tol,amat_,*u_,adiag_);
+  //int nsweep = jade_complex(maxsweep,tol,amat_,*u_,*tmpmat_,adiag_);
   //jade_complex(maxsweep,tol,amat_,*u_,adiag_);
   //cout << "Bisection::compute_transform: nsweep=" << nsweep
       //<< " maxsweep=" << maxsweep << " tol=" << tol << endl;
@@ -510,6 +510,7 @@ void Bisection::forward(ComplexMatrix& u, SlaterDet& sd)
 {
   // apply the bisection transformation to the SlaterDet sd
   // apply the rotation u to sd.c()
+  //ComplexMatrix c(sd.c());
   ComplexMatrix& c = sd.c();
   ComplexMatrix cp(c);
   //DoubleMatrix cp_proxy(cp);
@@ -528,6 +529,7 @@ void Bisection::backward(ComplexMatrix& u, SlaterDet& sd)
 {
   // apply the inverse bisection transformation to SlaterDet sd
   // apply rotation u^T to sd
+  //ComplexMatrix c(sd.c());
   ComplexMatrix& c = sd.c();
   ComplexMatrix cp(c);
   //DoubleMatrix cp_proxy(cp);
@@ -596,7 +598,7 @@ bool Bisection::check_amat(const ComplexMatrix &c)
       // factor -2.0 in next line: G and -G  
       bmat[imat]->gemm('c','n',1.0,cd,c,0.0);
       // rank-1 update using first row of cd_proxy() and c_proxy
-      //bmat[imat]->zger(-1.0,cd,0,c,0);
+      bmat[imat]->zger(-1.0,cd,0,c,0);
       imat++;
     }
 
@@ -623,7 +625,7 @@ bool Bisection::check_amat(const ComplexMatrix &c)
       // factor -2.0 in next line: G and -G
       bmat[imat]->gemm('c','n',1.0,cd,c,0.0);
       // rank-1 update using first row of cd_proxy() and c_proxy
-      //bmat[imat]->zger(-1.0,cd,0,c,0);
+      bmat[imat]->zger(-1.0,cd,0,c,0);
       imat++;
     }
 
@@ -651,7 +653,7 @@ bool Bisection::check_amat(const ComplexMatrix &c)
       // factor -2.0 in next line: G and -G
       bmat[imat]->gemm('c','n',1.0,cd,c,0.0);
       // rank-1 update using first row of cd_proxy() and c_proxy
-      //bmat[imat]->zger(-1.0,cd,0,c,0);
+      bmat[imat]->zger(-1.0,cd,0,c,0);
       imat++;
     }
   } // for l

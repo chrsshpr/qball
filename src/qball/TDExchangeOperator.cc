@@ -968,7 +968,7 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
   {
     SlaterDet& sd = *(wfc_.sd(ispin,0));
     // use copy to correctly read empty state occupations 
-    SlaterDet& sd_c = *(wf.sd(ispin,0));
+    //SlaterDet& sd_c = *(wf.sd(ispin,0));
     ComplexMatrix& c = sd.c();
     //ComplexMatrix& c1 = sd1.c();
     const int nst = sd.nst();
@@ -1048,7 +1048,7 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
       *uc_[ispin] = bisection_[ispin]->u();
 
       bool distribute = s_.ctrl.debug.find("BISECTION_NODIST") == string::npos;
-      if ( distribute )
+      /*if ( distribute )
       {
         // define a permutation ordering states by increasing degree
         // permute states according to the order defined by the
@@ -1224,7 +1224,7 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
             const int j = locpivot[i]-1;
             // swap columns i and j of u_->c()
             cout << " swap " << i << " " << j << endl;
-            for ( int k = 0; k < mloc; k++ )
+            for ( int k = 0; k < mloc; k++ )1
             {
               double tmp = p[i*mloc+k];
               p[i*mloc+k] = p[j*mloc+k];
@@ -1307,7 +1307,7 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
       {
         if ( gcontext_.onpe0() )
           cout << " ExchangeOperator: bisection distribution disabled" << endl;
-      } // if distribute
+      } */// if distribute
 
 #ifdef TIMING
       Timer tmbfwd;
@@ -1406,10 +1406,11 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
       }
     }
     // local occupation numbers
-    const double* occ = sd_c.occ_ptr(); //sd copy allows for usage of empty states 
+    //const double* occ = sd_c.occ_ptr(); //sd copy allows for usage of empty states 
+    const double* occ = sd.occ_ptr();
     for ( int i = 0; i < sd.nstloc(); i++ )  
-      //occ_kj_[i]=2.0;
-      occ_kj_[i]=occ[c.jglobal(i)];
+      occ_kj_[i]=2.0;
+      //occ_kj_[i]=occ[c.jglobal(i)];
       //occ_kj_[i]=sd.occ(c.jglobal(i));
     //}
     // number of states to be sent

@@ -52,8 +52,7 @@
 #include "Timer.h"
 using namespace std;
 
-int jade_complex(int maxsweep, double tol, vector<ComplexMatrix*> a,
-  ComplexMatrix& u, ComplexMatrix& tmpmat, vector<vector<complex<double> > >& adiag)
+int jade_complex(int maxsweep, double tol, vector<ComplexMatrix*> a, ComplexMatrix& atmp1, ComplexMatrix& atmp2, ComplexMatrix& atmp3, ComplexMatrix& atmp4, ComplexMatrix& atmp5, ComplexMatrix& atmp6, ComplexMatrix& u, ComplexMatrix& tmpmat, vector<vector<complex<double> > >& adiag)
 {
   Timer tm_comm;
   const bool debug_diag_sum = false;
@@ -577,27 +576,129 @@ int jade_complex(int maxsweep, double tol, vector<ComplexMatrix*> a,
   // The array a_aux may contain a (non-dummy) vector.
 
   // rotate columns of a and u to restore original order
- /* complex<double> *tmpmat1 = new complex<double>[nloc*mloc];
+  //complex<double> *tmpmat1 = new complex<double>[nloc*mloc];
   // rotate columns of a
-  for ( int k = 0; k < a.size(); k++ )
+  //for ( int k = 0; k < a.size(); k++ )
+  //{
+/*  if ( nloc_odd )
+  {
+    // find position of the dummy vector and copy a_aux onto it
+    int idum = 0;
+    while ( jglobal[idum] != -1 && idum < 2*nploc ) idum++;
+    //cout << ctxt.mype() << ": idum=" << idum << endl;
+    if ( idum != 2*nploc-1 )
+    {
+      for ( int k = 0; k < a.size(); k++ )
+      {
+        memcpy(acol[k][idum],&a_aux[k][0],mloc*sizeof(complex<double>));
+      }
+      memcpy(ucol[idum],&u_aux[0],mloc*sizeof(complex<double>));
+    }
+  }
+
+  // rotate columns of a and u to restore original order
+  //complex<double> *tmpmat = new complex<double>[nloc*mloc];
+  // rotate columns of a
+  for ( int k = 1; k < a.size(); k++ )
   {
     for ( int ipair = 0; ipair < nploc; ipair++ )
     {
       // copy columns of a[k] to temporary array tmpmat in original order
       if ( jglobal[top[ipair]] >= 0 )
       {
-        memcpy(&tmpmat1[ipair*mloc], acol[k][top[ipair]], mloc*sizeof(complex<double>));
+        memmove(&tmpmat[ipair*mloc], acol[k][top[ipair]], mloc*sizeof(complex<double>));
       }
       if ( jglobal[bot[nploc-ipair-1]] >= 0 )
       {
-        memcpy(&tmpmat1[(nploc+ipair)*mloc],acol[k][bot[nploc-ipair-1]],
+        memmove(&tmpmat[(nploc+ipair)*mloc],acol[k][bot[nploc-ipair-1]],
                mloc*sizeof(complex<double>));
       }
     }
     // copy tmpmat back to a[k]
-    memcpy(acol[k][0],tmpmat1,nloc*mloc*sizeof(complex<double>));
+    memmove(acol[k][0],tmpmat,nloc*mloc*sizeof(complex<double>));
   }*/
-
+    for ( int ipair = 0; ipair < nploc; ipair++ )
+    {
+      // copy columns of a[k] to temporary array tmpmat in original order
+      if ( jglobal[top[ipair]] >= 0 )
+      {
+        memcpy(&atmp1[ipair*mloc], acol[0][top[ipair]], mloc*sizeof(complex<double>));
+      }
+      if ( jglobal[bot[nploc-ipair-1]] >= 0 )
+      {
+        memcpy(&atmp1[(nploc+ipair)*mloc],acol[0][bot[nploc-ipair-1]],
+               mloc*sizeof(complex<double>));
+      }
+    }
+    for ( int ipair = 0; ipair < nploc; ipair++ )
+    {
+      // copy columns of a[1] to temporary array tmpmat in original order
+      if ( jglobal[top[ipair]] >= 0 )
+      {
+        memcpy(&atmp2[ipair*mloc], acol[1][top[ipair]], mloc*sizeof(complex<double>));
+      }
+      if ( jglobal[bot[nploc-ipair-1]] >= 0 )
+      {
+        memcpy(&atmp2[(nploc+ipair)*mloc],acol[1][bot[nploc-ipair-1]],
+               mloc*sizeof(complex<double>));
+      }
+    }
+    for ( int ipair = 0; ipair < nploc; ipair++ )
+    {
+      // copy columns of a[2] to temporary array tmpmat in original order
+      if ( jglobal[top[ipair]] >= 0 )
+      {
+        memcpy(&atmp3[ipair*mloc], acol[2][top[ipair]], mloc*sizeof(complex<double>));
+      }
+      if ( jglobal[bot[nploc-ipair-1]] >= 0 )
+      {
+        memcpy(&atmp3[(nploc+ipair)*mloc],acol[2][bot[nploc-ipair-1]],
+               mloc*sizeof(complex<double>));
+      }
+    }
+    for ( int ipair = 0; ipair < nploc; ipair++ )
+    {
+      // copy columns of a[3] to temporary array tmpmat in original order
+      if ( jglobal[top[ipair]] >= 0 )
+      {
+        memcpy(&atmp4[ipair*mloc], acol[3][top[ipair]], mloc*sizeof(complex<double>));
+      }
+      if ( jglobal[bot[nploc-ipair-1]] >= 0 )
+      {
+        memcpy(&atmp4[(nploc+ipair)*mloc],acol[3][bot[nploc-ipair-1]],
+               mloc*sizeof(complex<double>));
+      }
+    }
+    for ( int ipair = 0; ipair < nploc; ipair++ )
+    {
+      // copy columns of a[4] to temporary array tmpmat in original order
+      if ( jglobal[top[ipair]] >= 0 )
+      {
+        memcpy(&atmp5[ipair*mloc], acol[4][top[ipair]], mloc*sizeof(complex<double>));
+      }
+      if ( jglobal[bot[nploc-ipair-1]] >= 0 )
+      {
+        memcpy(&atmp5[(nploc+ipair)*mloc],acol[4][bot[nploc-ipair-1]],
+               mloc*sizeof(complex<double>));
+      }
+    }
+    for ( int ipair = 0; ipair < nploc; ipair++ )
+    {
+      // copy columns of a[5] to temporary array tmpmat in original order
+      if ( jglobal[top[ipair]] >= 0 )
+      {
+        memcpy(&atmp6[ipair*mloc], acol[5][top[ipair]], mloc*sizeof(complex<double>));
+      }
+      if ( jglobal[bot[nploc-ipair-1]] >= 0 )
+      {
+        memcpy(&atmp6[(nploc+ipair)*mloc],acol[5][bot[nploc-ipair-1]],
+               mloc*sizeof(complex<double>));
+      }
+    }
+    // copy tmpmat back to a[k]
+    //memcpy(acol[k][0],tmpmat1,nloc*mloc*sizeof(complex<double>));
+  //}
+  
   // rotate columns of u
   for ( int ipair = 0; ipair < nploc; ipair++ )
   {
@@ -613,11 +714,196 @@ int jade_complex(int maxsweep, double tol, vector<ComplexMatrix*> a,
     }
   }
   // copy tmpmat back to u
- // memcpy(ucol[0],&tmpmat,nloc*mloc*sizeof(complex<double>));
-  //delete [] tmpmat;
-   
+  //memcpy(ucol[0],&tmpmat,nloc*mloc*sizeof(complex<double>));
+  //delete [] tmpmat1;
+  {
+    for ( int i = 0; i < atmp1.n(); i++ )
+     {
+      adiag[0][i] = (0.0,0.0);
+     }
+    for ( int jblock = 0; jblock < atmp1.nblocks(); jblock++ )
+      for ( int y = 0; y < atmp1.nbs(jblock); y++ )
+      {
+        // j is the global column index
+        int j = atmp1.j(jblock,y);
+        int jjj = y + jblock*atmp1.nb();
+        const complex<double> *ap = atmp1.valptr(jjj*atmp1.mloc());
+        const complex<double> *up = tmpmat.valptr(jjj*tmpmat.mloc());
+        //int mloc = a[k]->mloc();
+        int one = 1;
+        for (int ii = 0; ii < mloc; ii++)
+        {
+          adiag[0][j] += conj(ap[ii])*up[ii];
+        }
+      }
+
+    // adiag[k][i] now contains the partial sums of the diagonal elements of a
+    tm_comm.start();
+    int len = 2*(atmp1.n());
+    //double *tadiag = (double*) &adiag[k][0];
+    //ctxt.dsum('c',len,1,&tadiag[0],len);
+    MPI_Allreduce(MPI_IN_PLACE,&adiag[0][0],len,MPI_DOUBLE,MPI_SUM,ctxt.comm());
+    tm_comm.stop();
+    // adiag[k] contains the diagonal elements of a[k]
+    // u contains the orthogonal transformation minimizing the spread
+  }
+  {
+    for ( int i = 0; i < atmp2.n(); i++ )
+     {
+      adiag[1][i] = (0.0,0.0);
+     }
+    for ( int jblock = 0; jblock < atmp2.nblocks(); jblock++ )
+      for ( int y = 0; y < atmp2.nbs(jblock); y++ )
+      {
+        // j is the global column index
+        int j = atmp2.j(jblock,y);
+        int jjj = y + jblock*atmp2.nb();
+        const complex<double> *ap = atmp2.valptr(jjj*atmp2.mloc());
+        const complex<double> *up = tmpmat.valptr(jjj*tmpmat.mloc());
+        //int mloc = a[k]->mloc();
+        int one = 1;
+        for (int ii = 0; ii < mloc; ii++)
+        {
+          adiag[1][j] += conj(ap[ii])*up[ii];
+        }
+      }
+
+    // adiag[k][i] now contains the partial sums of the diagonal elements of a
+    tm_comm.start();
+    int len = 2*(atmp2.n());
+    //double *tadiag = (double*) &adiag[k][0];
+    //ctxt.dsum('c',len,1,&tadiag[0],len);
+    MPI_Allreduce(MPI_IN_PLACE,&adiag[1][0],len,MPI_DOUBLE,MPI_SUM,ctxt.comm());
+    tm_comm.stop();
+    // adiag[k] contains the diagonal elements of a[k]
+    // u contains the orthogonal transformation minimizing the spread
+  }
+  {
+    for ( int i = 0; i < atmp3.n(); i++ )
+     {
+      adiag[2][i] = (0.0,0.0);
+     }
+    for ( int jblock = 0; jblock < atmp3.nblocks(); jblock++ )
+      for ( int y = 0; y < atmp3.nbs(jblock); y++ )
+      {
+        // j is the global column index
+        int j = atmp3.j(jblock,y);
+        int jjj = y + jblock*atmp3.nb();
+        const complex<double> *ap = atmp3.valptr(jjj*atmp3.mloc());
+        const complex<double> *up = tmpmat.valptr(jjj*tmpmat.mloc());
+        //int mloc = a[k]->mloc();
+        int one = 1;
+        for (int ii = 0; ii < mloc; ii++)
+        {
+          adiag[2][j] += conj(ap[ii])*up[ii];
+        }
+      }
+
+    // adiag[k][i] now contains the partial sums of the diagonal elements of a
+    tm_comm.start();
+    int len = 2*(atmp3.n());
+    //double *tadiag = (double*) &adiag[k][0];
+    //ctxt.dsum('c',len,1,&tadiag[0],len);
+    MPI_Allreduce(MPI_IN_PLACE,&adiag[2][0],len,MPI_DOUBLE,MPI_SUM,ctxt.comm());
+    tm_comm.stop();
+    // adiag[k] contains the diagonal elements of a[k]
+    // u contains the orthogonal transformation minimizing the spread
+  }
+  {
+    for ( int i = 0; i < atmp4.n(); i++ )
+     {
+      adiag[3][i] = (0.0,0.0);
+     }
+    for ( int jblock = 0; jblock < atmp4.nblocks(); jblock++ )
+      for ( int y = 0; y < atmp4.nbs(jblock); y++ )
+      {
+        // j is the global column index
+        int j = atmp4.j(jblock,y);
+        int jjj = y + jblock*atmp4.nb();
+        const complex<double> *ap = atmp4.valptr(jjj*atmp4.mloc());
+        const complex<double> *up = tmpmat.valptr(jjj*tmpmat.mloc());
+        //int mloc = a[k]->mloc();
+        int one = 1;
+        for (int ii = 0; ii < mloc; ii++)
+        {
+          adiag[3][j] += conj(ap[ii])*up[ii];
+        }
+      }
+
+    // adiag[k][i] now contains the partial sums of the diagonal elements of a
+    tm_comm.start();
+    int len = 2*(atmp4.n());
+    //double *tadiag = (double*) &adiag[k][0];
+    //ctxt.dsum('c',len,1,&tadiag[0],len);
+    MPI_Allreduce(MPI_IN_PLACE,&adiag[3][0],len,MPI_DOUBLE,MPI_SUM,ctxt.comm());
+    tm_comm.stop();
+    // adiag[k] contains the diagonal elements of a[k]
+    // u contains the orthogonal transformation minimizing the spread
+  }
+  {
+    for ( int i = 0; i < atmp5.n(); i++ )
+     {
+      adiag[4][i] = (0.0,0.0);
+     }
+    for ( int jblock = 0; jblock < atmp5.nblocks(); jblock++ )
+      for ( int y = 0; y < atmp5.nbs(jblock); y++ )
+      {
+        // j is the global column index
+        int j = atmp5.j(jblock,y);
+        int jjj = y + jblock*atmp5.nb();
+        const complex<double> *ap = atmp5.valptr(jjj*atmp5.mloc());
+        const complex<double> *up = tmpmat.valptr(jjj*tmpmat.mloc());
+        //int mloc = a[k]->mloc();
+        int one = 1;
+        for (int ii = 0; ii < mloc; ii++)
+        {
+          adiag[4][j] += conj(ap[ii])*up[ii];
+        }
+      }
+
+    // adiag[k][i] now contains the partial sums of the diagonal elements of a
+    tm_comm.start();
+    int len = 2*(atmp5.n());
+    //double *tadiag = (double*) &adiag[k][0];
+    //ctxt.dsum('c',len,1,&tadiag[0],len);
+    MPI_Allreduce(MPI_IN_PLACE,&adiag[4][0],len,MPI_DOUBLE,MPI_SUM,ctxt.comm());
+    tm_comm.stop();
+    // adiag[k] contains the diagonal elements of a[k]
+    // u contains the orthogonal transformation minimizing the spread
+  }
+  {
+    for ( int i = 0; i < atmp6.n(); i++ )
+     {
+      adiag[5][i] = (0.0,0.0);
+     }
+    for ( int jblock = 0; jblock < atmp6.nblocks(); jblock++ )
+      for ( int y = 0; y < atmp6.nbs(jblock); y++ )
+      {
+        // j is the global column index
+        int j = atmp6.j(jblock,y);
+        int jjj = y + jblock*atmp6.nb();
+        const complex<double> *ap = atmp6.valptr(jjj*atmp6.mloc());
+        const complex<double> *up = tmpmat.valptr(jjj*tmpmat.mloc());
+        //int mloc = a[k]->mloc();
+        int one = 1;
+        for (int ii = 0; ii < mloc; ii++)
+        {
+          adiag[5][j] += conj(ap[ii])*up[ii];
+        }
+      }
+
+    // adiag[k][i] now contains the partial sums of the diagonal elements of a
+    tm_comm.start();
+    int len = 2*(atmp6.n());
+    //double *tadiag = (double*) &adiag[k][0];
+    //ctxt.dsum('c',len,1,&tadiag[0],len);
+    MPI_Allreduce(MPI_IN_PLACE,&adiag[5][0],len,MPI_DOUBLE,MPI_SUM,ctxt.comm());
+    tm_comm.stop();
+    // adiag[k] contains the diagonal elements of a[k]
+    // u contains the orthogonal transformation minimizing the spread
+  } 
   // compute diagonal values
-  for ( int k = 0; k < a.size(); k++ )
+/*  for ( int k = 0; k < a.size(); k++ )
   {
     for ( int i = 0; i < a[k]->n(); i++ )
      {
@@ -648,7 +934,7 @@ int jade_complex(int maxsweep, double tol, vector<ComplexMatrix*> a,
     tm_comm.stop();
     // adiag[k] contains the diagonal elements of a[k]
     // u contains the orthogonal transformation minimizing the spread
-  }
+  }*/
 
   if ( ctxt.onpe0() )
     cout << " jade_complex: comm time: " << tm_comm.real() << endl;

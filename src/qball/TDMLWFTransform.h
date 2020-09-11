@@ -56,6 +56,12 @@ class TDMLWFTransform
   std::vector<ComplexMatrix*> a_;  //DCY cosine and sine matrices
   ComplexMatrix* u_;               //DCY orthogonal transformation
   ComplexMatrix* tmpmat_; 	//CS ordered orthogonal tranform
+  ComplexMatrix* atmp1_;
+  ComplexMatrix* atmp2_;
+  ComplexMatrix* atmp3_;
+  ComplexMatrix* atmp4_;
+  ComplexMatrix* atmp5_;
+  ComplexMatrix* atmp6_;  
   std::vector<std::vector<std::complex<double> > > adiag_; //DCY, diagonal elements
   std::vector<std::vector<double> > adiag_real_;
   std::vector<std::vector<double> > adiag_imag_; 

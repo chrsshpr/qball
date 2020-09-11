@@ -60,6 +60,13 @@ cell_(sd.basis().cell()), ctxt_(sd.context()),  bm_(BasisMapping(sd.basis()))
     a_[k] = new ComplexMatrix(ctxt_,n,n,nb,nb);
     adiag_[k].resize(n);
   }
+
+  atmp1_ = new ComplexMatrix(ctxt_,n,n,nb,nb);
+  atmp2_ = new ComplexMatrix(ctxt_,n,n,nb,nb);
+  atmp3_ = new ComplexMatrix(ctxt_,n,n,nb,nb);
+  atmp4_ = new ComplexMatrix(ctxt_,n,n,nb,nb);
+  atmp5_ = new ComplexMatrix(ctxt_,n,n,nb,nb);
+  atmp6_ = new ComplexMatrix(ctxt_,n,n,nb,nb);
   u_ = new ComplexMatrix(ctxt_,n,n,nb,nb);
   tmpmat_ = new ComplexMatrix(ctxt_,n,n,nb,nb);
 
@@ -78,9 +85,16 @@ TDMLWFTransform::~TDMLWFTransform(void)
    {
     delete a_[k];
    } 
+
+
   delete u_;
   delete tmpmat_; 
-
+  delete atmp1_;
+  delete atmp2_;
+  delete atmp3_;
+  delete atmp4_;
+  delete atmp5_;
+  delete atmp6_;
   delete sdcosx_;
   delete sdcosy_;
   delete sdcosz_;
@@ -118,7 +132,12 @@ void TDMLWFTransform::update(void)
   }
   u_->resize(c.n(), c.n(), c.nb(), c.nb());
   tmpmat_->resize(c.n(), c.n(), c.nb(), c.nb());
-
+  atmp1_->resize(c.n(), c.n(), c.nb(), c.nb());
+  atmp2_->resize(c.n(), c.n(), c.nb(), c.nb());
+  atmp3_->resize(c.n(), c.n(), c.nb(), c.nb());
+  atmp4_->resize(c.n(), c.n(), c.nb(), c.nb());
+  atmp5_->resize(c.n(), c.n(), c.nb(), c.nb());
+  atmp6_->resize(c.n(), c.n(), c.nb(), c.nb());
   // loop over all local states
   const int np0 = bm_.np0();
   const int np1 = bm_.np1();
@@ -221,7 +240,7 @@ void TDMLWFTransform::compute_transform(void)
 {
   const int maxsweep = 100;
   const double tol = 1.e-8;
-  int nsweep = jade_complex(maxsweep,tol,a_,*u_,*tmpmat_,adiag_); 
+  int nsweep = jade_complex(maxsweep,tol,a_,*atmp1_,*atmp2_,*atmp3_,*atmp4_,*atmp5_,*atmp6_,*u_,*tmpmat_,adiag_); 
   // Joint approximate diagonalization step.
 }
 
@@ -326,9 +345,13 @@ D3vector TDMLWFTransform::dipole(void)
 {
   // total electronic dipole
   D3vector sum(0.0,0.0,0.0);
-  for ( int i = 0; i < sd_.nst(); i++ )
-    sum -= sd_.occ(i) * center(i);
-    //sum -= 2 * center(i); 
+  
+  for ( int i = 0; i < sd_.nst(); i++ ) 
+//  {
+//    if (sd_.occ(i) == 2)
+    //sum -= sd_.occ(i) * center(i);
+//  }
+  sum -= 2 * center(i); 
   return sum;
 }
 
