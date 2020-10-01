@@ -166,6 +166,7 @@ struct Control
   double alpha_RSH;
   double beta_RSH;
   double mu_RSH;
+  double MLWF_tol;
 };
 #endif
 

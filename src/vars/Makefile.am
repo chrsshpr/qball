@@ -49,6 +49,7 @@ noinst_HEADERS =                            \
 	MatrixLoc.h                         \
 	MDIter.h                            \
 	Memory.h                            \
+	MLWFtol.h			    \
 	MuRSH.h 			    \
 	NA_overlaps.h                       \
 	Nempty.h                            \

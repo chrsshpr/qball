@@ -250,7 +250,7 @@ void EhrenSampleStepper::step(int niter)
     if (wf.nspin() > 1 && s_.ctxt_.oncoutpe()) 
       cout << "<ERROR> nspin > 1!  MLWF doesn't currently work with spin-polarized systems </ERROR>" << endl;
     assert(wf.nspin()==1);
-    tdmlwft = new TDMLWFTransform(*wf.sd(0,0));
+    tdmlwft = new TDMLWFTransform(*wf.sd(0,0),s_);
   }
 
   // if ultrasoft, calculate position-dependent functions

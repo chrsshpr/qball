@@ -119,7 +119,7 @@ ElectricEnthalpy::ElectricEnthalpy(const Sample& s): s_(s), wf_(s.wf),
   assert(wf_.nspin()==1);
 
   dwf_ = new Wavefunction(s.wf); 
-  tdmlwft_ = new TDMLWFTransform(sd_);
+  tdmlwft_ = new TDMLWFTransform(sd_,s_);
   mlwft_ = new MLWFTransform(sd_);
 
   smat_[0] = smat_[1] = smat_[2] = 0;

@@ -32,6 +32,8 @@
 #include<iostream>
 #include <qball/Context.h>
 #include <qball/SlaterDet.h>
+#include <qball/Sample.h>
+
 using namespace std;
 
 int ComputeMLWFCmd::action(int argc, char **argv)
@@ -48,8 +50,10 @@ int ComputeMLWFCmd::action(int argc, char **argv)
 // If WFs are complex, use "TDMLWF" to compute WFs with complex components
   if (wf.force_complex_set()) 
   {
-	TDMLWFTransform* tdmlwft = new TDMLWFTransform(sd);
-  	tdmlwft->update();
+
+	ComputeTDMLWF* tdmlwft = new ComputeTDMLWF(sd);
+	//TDMLWFTransform* tdmlwft = new TDMLWFTransform(sd);
+	tdmlwft->update();
   	tdmlwft->compute_transform();
   	tdmlwft->apply_transform(sd);
 	if ( ui->oncoutpe() )

@@ -103,6 +103,7 @@ using namespace std;
 #include <vars/AlphaRSH.h>
 #include <vars/BetaRSH.h>
 #include <vars/MuRSH.h> 
+#include <vars/MLWFtol.h>
 #include <vars/Cell.h>
 #include <vars/CellDyn.h>
 #include <vars/CellLock.h>
@@ -380,6 +381,7 @@ int main(int argc, char **argv, char **envp)
   ui->addVar(new AlphaRSH(s));
   ui->addVar(new BetaRSH(s));
   ui->addVar(new MuRSH(s));
+  ui->addVar(new MLWFtol(s));
   ui->addVar(new BlHF(s));
   ui->addVar(new BtHF(s));
   ui->addVar(new Cell(s));

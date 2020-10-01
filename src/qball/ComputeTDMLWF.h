@@ -22,7 +22,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 //
-// TDMLWFTransform.h
+// ComputeTDMLWF.h
 //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -35,7 +35,6 @@ class SlaterDet;
 class UnitCell;
 class DoubleMatrix;
 class ComplexMatrix; 
-class Sample;
 #include <math/d3vector.h>
 #include "BasisMapping.h"
 //#include "UserInterface.h"
@@ -44,14 +43,13 @@ class Sample;
 #include "Sample.h"
 #include <math/matrix.h>
 
-class TDMLWFTransform
+class ComputeTDMLWF
 {
   private:
 
   const SlaterDet& sd_;
   const UnitCell& cell_;
   const Context& ctxt_;
-  const Sample& s_;
 
   BasisMapping bm_;
   //DoubleMatrix* aprox; //proxy double matrix for a's
@@ -98,7 +96,7 @@ class TDMLWFTransform
   D3vector center(int i);
   D3vector dipole(void);
 
-  TDMLWFTransform(const SlaterDet& sd, const Sample& s);
-  ~TDMLWFTransform(void);
+  ComputeTDMLWF(const SlaterDet& sd);
+  ~ComputeTDMLWF(void);
 };
 #endif

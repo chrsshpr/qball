@@ -22,7 +22,7 @@
 //
 ////////////////////////////////////////////////////////////////////////////////
 //
-// TDMLWFTransform.cc
+// ComputeTDMLWF.cc
 //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -33,7 +33,7 @@
 #include <math.h>
 
 #include "Sample.h"
-#include "TDMLWFTransform.h"
+#include "ComputeTDMLWF.h"
 #include <math/d3vector.h>
 #include "Basis.h"
 #include "SlaterDet.h"
@@ -47,8 +47,8 @@
 using namespace std;
 
 ////////////////////////////////////////////////////////////////////////////////
-TDMLWFTransform::TDMLWFTransform(const SlaterDet& sd, const Sample& s) : sd_(sd), 
-cell_(sd.basis().cell()), ctxt_(sd.context()),  bm_(BasisMapping(sd.basis())), s_(s)
+ComputeTDMLWF::ComputeTDMLWF(const SlaterDet& sd) : sd_(sd), 
+cell_(sd.basis().cell()), ctxt_(sd.context()),  bm_(BasisMapping(sd.basis()))
 {
   a_.resize(6);
   adiag_.resize(6);
@@ -80,7 +80,7 @@ cell_(sd.basis().cell()), ctxt_(sd.context()),  bm_(BasisMapping(sd.basis())), s
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-TDMLWFTransform::~TDMLWFTransform(void)
+ComputeTDMLWF::~ComputeTDMLWF(void)
 {
   for ( int k = 0; k < 6; k++ )
    {
@@ -105,7 +105,7 @@ TDMLWFTransform::~TDMLWFTransform(void)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void TDMLWFTransform::update(void)
+void ComputeTDMLWF::update(void)
 {
   const ComplexMatrix& c = sd_.c();
   ComplexMatrix& ccosx = sdcosx_->c();
@@ -237,17 +237,16 @@ void TDMLWFTransform::update(void)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void TDMLWFTransform::compute_transform(void) 
+void ComputeTDMLWF::compute_transform(void) 
 {
   const int maxsweep = 100;
-  //const double tol = 1.e-8;
-  const double tol = s_.ctrl.MLWF_tol;
+  const double tol = 1.e-8;
   int nsweep = jade_complex(maxsweep,tol,a_,*atmp1_,*atmp2_,*atmp3_,*atmp4_,*atmp5_,*atmp6_,*u_,*tmpmat_,adiag_); 
   // Joint approximate diagonalization step.
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void TDMLWFTransform::compute_sincos(const int n, const complex<double>* f,
+void ComputeTDMLWF::compute_sincos(const int n, const complex<double>* f,
   complex<double>* fc, complex<double>* fs)
 {
   // fc[i] =     0.5 * ( f[i-1] + f[i+1] )
@@ -276,7 +275,7 @@ void TDMLWFTransform::compute_sincos(const int n, const complex<double>* f,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-D3vector TDMLWFTransform::center(int i)
+D3vector ComputeTDMLWF::center(int i)
 {
   assert(i>=0 && i<sd_.nst()); 
   const double cx = real(adiag_[0][i]); 
@@ -302,7 +301,7 @@ D3vector TDMLWFTransform::center(int i)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-double TDMLWFTransform::spread2(int i, int j)
+double ComputeTDMLWF::spread2(int i, int j)
 {
   assert(i>=0 && i<sd_.nst());
   assert(j>=0 && j<3);
@@ -315,20 +314,20 @@ double TDMLWFTransform::spread2(int i, int j)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-double TDMLWFTransform::spread2(int i)
+double ComputeTDMLWF::spread2(int i)
 {
   assert(i>=0 & i<sd_.nst());
   return spread2(i,0) + spread2(i,1) + spread2(i,2);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-double TDMLWFTransform::spread(int i)
+double ComputeTDMLWF::spread(int i)
 {
   return sqrt(spread2(i));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-double TDMLWFTransform::spread2(void)
+double ComputeTDMLWF::spread2(void)
 {
   double sum = 0.0;
   for ( int i = 0; i < sd_.nst(); i++ )
@@ -337,13 +336,13 @@ double TDMLWFTransform::spread2(void)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-double TDMLWFTransform::spread(void)
+double ComputeTDMLWF::spread(void)
 {
   return sqrt(spread2());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-D3vector TDMLWFTransform::dipole(void)
+D3vector ComputeTDMLWF::dipole(void)
 {
   // total electronic dipole
   D3vector sum(0.0,0.0,0.0);
@@ -358,7 +357,7 @@ D3vector TDMLWFTransform::dipole(void)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void TDMLWFTransform::apply_transform(SlaterDet& sd)
+void ComputeTDMLWF::apply_transform(SlaterDet& sd)
 {
   // proxy double matrix c. 
   ComplexMatrix c(sd.c());  //DCY
