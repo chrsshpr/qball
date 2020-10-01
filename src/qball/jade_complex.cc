@@ -715,7 +715,7 @@ int jade_complex(int maxsweep, double tol, vector<ComplexMatrix*> a, ComplexMatr
   // copy tmpmat back to u
   //memcpy(ucol[0],&tmpmat,nloc*mloc*sizeof(complex<double>));
   //delete [] tmpmat1;
-/*  {
+  {
     for ( int i = 0; i < atmp1.n(); i++ )
      {
       adiag[0][i] = (0.0,0.0);
@@ -900,7 +900,7 @@ int jade_complex(int maxsweep, double tol, vector<ComplexMatrix*> a, ComplexMatr
     tm_comm.stop();
     // adiag[k] contains the diagonal elements of a[k]
     // u contains the orthogonal transformation minimizing the spread
-  } */
+  } /*
   // compute diagonal values
   for ( int k = 0; k < a.size(); k++ )
   {
@@ -934,7 +934,7 @@ int jade_complex(int maxsweep, double tol, vector<ComplexMatrix*> a, ComplexMatr
     // adiag[k] contains the diagonal elements of a[k]
     // u contains the orthogonal transformation minimizing the spread
   }
-
+*/
   if ( ctxt.onpe0() )
     cout << " jade_complex: comm time: " << tm_comm.real() << endl;
   return nsweep;
