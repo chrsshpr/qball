@@ -42,7 +42,7 @@
 #include "EnthalpyFunctional.h"
 #include "HubbardPotential.h"
 #include "dftd3.h"
-
+#include "Background.h"
 #include "Timer.h"
 #include <math/blas.h>
 
@@ -186,7 +186,7 @@ EnergyFunctional::EnergyFunctional( Sample& s, const Wavefunction& wf, ChargeDen
   rhoelg.resize(ngloc);
   rhogt.resize(ngloc);
   rhopst.resize(ngloc);
-
+  rhobc.resize(ngloc); //RY bulk charge density;
   veff_g.resize(wf_.nspin());
   if (s_.ctrl.ultrasoft) {
     for ( int ispin = 0; ispin < wf_.nspin(); ispin++ )
@@ -261,7 +261,9 @@ EnergyFunctional::EnergyFunctional( Sample& s, const Wavefunction& wf, ChargeDen
    }
   
   sf.init(tau0,*vbasis_);
-  
+    // RY: Define a new jellium class 
+  if (s_.ctrl.has_background_charge > 0)
+       jell = new Jellium(s_.ctrl.background_charge);
   cell_moved(compute_stress);  //ewd:  compute_stress = false, don't store dtwnl
   
   atoms_moved();
@@ -320,7 +322,8 @@ EnergyFunctional::~EnergyFunctional(void) {
   if (s_.ctrl.tddft_involved)
      delete hamil_cd_;
   hamil_cd_ = 0;
-
+  if (s_.ctrl.has_background_charge)
+     { rhobc.clear();   delete jell;}
   if(vp) delete vp;
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -2088,7 +2091,17 @@ void EnergyFunctional::cell_moved(const bool compute_stress) {
       dvps[is][ig] =  dv * omega_inv;
     }    
   }
-  
+  //RY update  background charge density
+  if (s_.ctrl.has_background_charge > 0)
+  {
+     jell->update_rho_r( cell,*vft,ngloc);
+     vector <complex<double>> tmp_jell;
+     tmp_jell = jell->rho_r;
+     vft->forward(&tmp_jell[0],&rhobc[0]);
+     tmp_jell.clear();
+                                     
+  }
+     //                                
   // Update confinement potentials
   for ( int ispin = 0; ispin < wf_.nspin(); ispin++ ) 
     if (wf_.spinactive(ispin)) 

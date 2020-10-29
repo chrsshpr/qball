@@ -98,6 +98,7 @@ using namespace std;
 #include <ui/CoordinatesCmd.h>
 
 #include <vars/AtomsDyn.h>
+#include <vars/BackgroundVar.h>
 #include <vars/Cell.h>
 #include <vars/CellDyn.h>
 #include <vars/CellLock.h>
@@ -125,6 +126,7 @@ using namespace std;
 #include <vars/NA_overlaps.h>
 #include <vars/Dt.h>
 #include <vars/Nempty.h>
+#include <vars/Projempty.h>
 #include <vars/Nrowmax.h>
 #include <vars/RefCell.h>
 #include <vars/Spin.h>
@@ -168,6 +170,7 @@ using namespace std;
 #include <vars/SaveHoleFreq.h>
 #include <vars/SaveNTOFreq.h>
 #include <vars/SaveElecFreq.h>
+#include <vars/SaveEffElecFreq.h>
 #include <vars/Save2ndProjFreq.h>
 #include <vars/Sinefield.h>
 #include <vars/CalDipFreq.h>
@@ -331,6 +334,7 @@ int main(int argc, char **argv, char **envp)
   UserInterface* ui = new UserInterface(ctxt);
 
   ui->addCmd(new AtomCmd(s));
+  ui->addVar(new BackgroundCharge(s));
   ui->addCmd(new MMAtomCmd(s));
   ui->addCmd(new HelpCmd(s));
   ui->addCmd(new ListAtomsCmd(s));
@@ -392,6 +396,7 @@ int main(int argc, char **argv, char **envp)
   ui->addVar(new FermiTemp(s));
   ui->addVar(new Dt(s));
   ui->addVar(new Nempty(s));
+  ui->addVar(new Projempty(s));
   ui->addVar(new Nrowmax(s));
   ui->addVar(new RefCell(s));
   ui->addVar(new Spin(s));
@@ -438,6 +443,7 @@ int main(int argc, char **argv, char **envp)
   ui->addVar(new SaveHoleFreq(s));
   ui->addVar(new SaveElecFreq(s));
   ui->addVar(new SaveNTOFreq(s));
+  ui->addVar(new SaveEffElecFreq(s));
   ui->addVar(new NaturalOrbital(s));
   ui->addVar(new Save2ndProjFreq(s));
   ui->addVar(new Sinefield(s));

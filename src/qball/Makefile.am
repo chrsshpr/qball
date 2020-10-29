@@ -15,6 +15,7 @@ noinst_HEADERS =                            \
 	AngleConstraint.h                   \
 	Atom.h                              \
 	AtomSet.h                           \
+        Background.h                        \
 	Base64Transcoder.h                  \
 	Basis.h                             \
 	BasisMapping.h                      \
@@ -110,11 +111,13 @@ noinst_HEADERS =                            \
 	Wavefunction.h                      \
 	WavefunctionStepper.h               \
 	AbsorbingPotential.h                \
-	XCPotential.h
+	XCPotential.h                       \
+        TDNaturalOrbital.h
 
 libqbLink_a_SOURCES =                        \
 	AtomSet.cc                           \
 	Atom.cc                              \
+        Background.cc                        \
 	CoordinateConstraint.cc              \
 	SymmetrySet.cc                       \
 	Symmetry.cc                          \
@@ -192,4 +195,5 @@ libqbLink_a_SOURCES =                        \
 	ExponentialWavefunctionStepper.cc    \
 	SelfConsistentPotential.cc           \
 	clooper.c                            \
-	qbLink.cc
+        TDNaturalOrbital.cc                  \
+        qbLink.cc

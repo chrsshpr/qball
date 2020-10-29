@@ -160,6 +160,8 @@ struct Control
   D3vector sine_field;
   bool  compute_sine_field ;
   bool saveholestate;
+  string background_charge;// RY: background charge surface informations
+  bool has_background_charge;//RY:whether background charge
 };
 #endif
 

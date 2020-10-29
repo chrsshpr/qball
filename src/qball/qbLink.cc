@@ -101,6 +101,7 @@ using namespace std;
 #include <ui/CoordinatesCmd.h>
 
 #include <vars/AtomsDyn.h>
+#include <vars/BackgroundVar.h>
 #include <vars/Cell.h>
 #include <vars/CellDyn.h>
 #include <vars/CellLock.h>
@@ -336,6 +337,7 @@ void qbLink::init(void) {
     cout << "<npes> " << ctxt->size() << " </npes>" << endl;
   }
   ui->addCmd(new AtomCmd(s));
+  ui->addVar(new BackgroundCharge(s));
   ui->addCmd(new MMAtomCmd(s));
   ui->addCmd(new HelpCmd(s));
   ui->addCmd(new ListAtomsCmd(s));

@@ -36,6 +36,7 @@
 #include <valarray>
 #include <map>
 #include <string>
+#include "Background.h"
 #include "ChargeDensity.h"
 #include "StructureFactor.h"
 #include "SelfConsistentPotential.h"
@@ -56,6 +57,7 @@ class NonLocalPotential;
 class ConfinementPotential;
 class EnthalpyFunctional;
 class HubbardPotential;
+class Jellium;
 
 typedef map<string,Timer> TimerMap;
 
@@ -85,6 +87,9 @@ class EnergyFunctional
   vector<vector<double> > vps, dvps, rhops;
   vector<complex<double> > tmp_r, vion_local_g, dvion_local_g, vlocal_g,
       rhopst, rhogt, rhoelg, vtemp;
+
+  vector <complex<double> > rhobc;// RY: density of bulk background charge 
+  Jellium*  jell; // RY: define class for jellium background charge
   vector<double> ftmp;
   
   vector<vector<double> > tau0, taum, fion_esr;
