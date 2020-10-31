@@ -1985,7 +1985,14 @@ void EnergyFunctional::atoms_moved(void)
   // compute esr: pseudocharge repulsion energy
   const UnitCell& cell = wf_.cell();
   const double omega_inv = 1.0 / cell.volume();
-  
+    // RY: add background charge into psudo charge density;
+  if (s_.ctrl.has_background_charge){
+     for ( int ig = 0; ig < ngloc; ig++ ){
+        rhopst[ig] -= rhobc[ig];
+        }
+  }
+    
+    
   esr_  = 0.0;
   sigma_esr = 0.0;
   for ( int is = 0; is < nsp_; is++ )
@@ -2092,7 +2099,7 @@ void EnergyFunctional::cell_moved(const bool compute_stress) {
     }    
   }
   //RY update  background charge density
-  if (s_.ctrl.has_background_charge > 0)
+  if (s_.ctrl.has_background_charge )
   {
      jell->update_rho_r( cell,*vft,ngloc);
      vector <complex<double>> tmp_jell;
