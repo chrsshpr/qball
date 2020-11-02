@@ -239,7 +239,7 @@ void TDMLWFTransform::update(void)
 ////////////////////////////////////////////////////////////////////////////////
 void TDMLWFTransform::compute_transform(void) 
 {
-  const int maxsweep = 100;
+  const int maxsweep = 500;
   //const double tol = 1.e-8;
   const double tol = s_.ctrl.MLWF_tol;
   int nsweep = jade_complex(maxsweep,tol,a_,*atmp1_,*atmp2_,*atmp3_,*atmp4_,*atmp5_,*atmp6_,*u_,*tmpmat_,adiag_); 
