@@ -101,13 +101,13 @@ class LIBXCFunctional : public XCFunctional
 
     for (int i = 0; i < func_ids_.size();i ++) {
       if  (func_families_[i] == XC_FAMILY_GGA 
-           || func_families_[i] == XC_FAMILY_HYB_GGA
+           //|| func_families_[i] == XC_FAMILY_HYB_GGA  //CS HYB are now part of GGA in version 5.0.1 and later 
           ) 
           _xcfamily = XC_FAMILY_GGA;
     }
     for (int i = 0; i < func_ids_.size();i ++) {
       if  ( func_families_[i] == XC_FAMILY_MGGA 
-           || func_families_[i] == XC_FAMILY_HYB_MGGA
+           //|| func_families_[i] == XC_FAMILY_HYB_MGGA
           ) 
           _xcfamily = XC_FAMILY_MGGA;
     }

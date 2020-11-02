@@ -135,7 +135,7 @@ void LIBXCFunctional::setxc(void)
               }
             break;
             case XC_FAMILY_GGA:
-            case XC_FAMILY_HYB_GGA:
+            //case XC_FAMILY_HYB_GGA:
               for ( int ir = 0; ir < _np; ir++ )
               {
                 if (rho[ir] < 1.e-18 ) continue;
@@ -214,7 +214,7 @@ void LIBXCFunctional::setxc(void)
             break;
 
             case XC_FAMILY_GGA:
-            case XC_FAMILY_HYB_GGA:
+            //case XC_FAMILY_HYB_GGA:
             {
               for ( int ir = 0; ir < _np; ir++ )
               {
@@ -309,7 +309,7 @@ void LIBXCFunctional::setxc(void)
               }
             break;
             case XC_FAMILY_GGA:
-            case XC_FAMILY_HYB_GGA:
+            //case XC_FAMILY_HYB_GGA:
               for ( int ir = 0; ir < _np; ir++ )
               {
                 if (rho[ir] < 1.e-10 ) continue;
@@ -325,7 +325,7 @@ void LIBXCFunctional::setxc(void)
               }
             break;
             case XC_FAMILY_MGGA:
-            case XC_FAMILY_HYB_MGGA:
+            //case XC_FAMILY_HYB_MGGA:
               //zero = 0.0;
               for ( int ir = 0; ir < _np; ir++ )
               {
@@ -419,7 +419,7 @@ void LIBXCFunctional::setxc(void)
             break;
 
             case XC_FAMILY_GGA:
-            case XC_FAMILY_HYB_GGA:
+            //case XC_FAMILY_HYB_GGA:
             {
               for ( int ir = 0; ir < _np; ir++ )
               {
