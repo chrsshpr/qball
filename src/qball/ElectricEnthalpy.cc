@@ -225,7 +225,10 @@ void ElectricEnthalpy::update(void)
     { 
       tdmlwft_->compute_transform();
       //tdmlwft_->apply_transform(sd_); //Wavefunction must be in Wannier gauge 
-    }
+      if (s_.ctrl.wf_diag != "TDMLWF")
+	cout << "<ERROR> Wavefunction must be in Wannier gauge! </ERROR>" << endl;
+	throw;
+    }  
     else
     {
       mlwft_->compute_transform();
