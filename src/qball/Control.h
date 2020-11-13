@@ -158,8 +158,11 @@ struct Control
   string saveholefilebase,saveelecfilebase,saveNOfilebase;
 
   D3vector sine_field;
-  bool  compute_sine_field ;
+  bool  compute_sine_field;
+  D3vector cosine_field;
+  bool  compute_cosine_field;
   int blHF[3];
+  double efield_timing[2];
   double btHF;
   double hf;
   double alpha_PBE0;

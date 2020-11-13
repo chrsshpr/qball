@@ -217,7 +217,7 @@ void TDMLWFTransform::update(void)
 void TDMLWFTransform::compute_transform(void)
 {
   const int maxsweep = 100;
-  const double tol = 1.e-8;
+  const double tol = 1.e-5;
   int nsweep = jade_complex(maxsweep,tol,a_,*u_,adiag_); 
   // Joint approximate diagonalization step.
 }

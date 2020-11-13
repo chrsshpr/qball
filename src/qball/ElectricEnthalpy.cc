@@ -48,6 +48,7 @@
 #include "FourierTransform.h"
 #include "UnitCell.h"
 using namespace std;
+
 ///////////////////////////////////////////////////////////////////////////////
 double ElectricEnthalpy::vsst(double x) const
 {
@@ -224,7 +225,10 @@ void ElectricEnthalpy::update(void)
     if (pol_type_ == tdmlwf || pol_type_ == tdmlwf_ref) 
     { 
       tdmlwft_->compute_transform();
-      //tdmlwft_->apply_transform(sd_); //Wavefunction must be in Wannier gauge 
+      tdmlwft_->apply_transform(sd_); //Wavefunction must be in Wannier gauge 
+      //if (s_.ctrl.wf_diag != "TDMLWF")
+	//cout << "<ERROR> Wavefunction must be in Wannier gauge! </ERROR>" << endl;
+	//throw;
     }
     else
     {

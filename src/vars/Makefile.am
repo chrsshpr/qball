@@ -67,6 +67,9 @@ noinst_HEADERS =                            \
 	Save2ndProjFreq.h 		    \
 	SaveFreq.h                          \
 	SaveWfFreq.h                        \
+	Sinefield.h 			    \
+	Cosinefield.h			    \
+        EfieldTiming.h			    \
 	Smearing.h                          \
 	SmearingWidth.h                     \
 	Spin.h                              \
