@@ -33,6 +33,7 @@
 #include<iomanip>
 #include<sstream>
 #include<stdlib.h>
+//#include<math.h>
 
 #include <qball/Sample.h>
 
@@ -49,12 +50,16 @@ class EfieldTiming : public Var
     if ( argc != 3 )
     {
       if ( ui->oncoutpe() )
-      cout << " efield_timing takes two value: t0 and gamma" << endl;
+      cout << " efield_timing takes two value: t0 and full width half max" << endl;
       return 1;
     }
-
+    
+    double ev2au = 0.0367493;
+    //double sig = 2 * sqrt(2*log(2));
+    double sig = 2.3548;
+    double convert = atof(argv[2])*ev2au;
     double v0 = atof(argv[1]);
-    double v1 = atof(argv[2]);
+    double v1 = sig /convert; 
 
     if ( v0 < 0.0 || v1 < 0.0 )
     {
@@ -83,7 +88,7 @@ class EfieldTiming : public Var
   EfieldTiming(Sample *sample) : s(sample)
   {
     s->ctrl.efield_timing[0] = 0;
-    s->ctrl.efield_timing[1] = 0.000001;
+    s->ctrl.efield_timing[1] = 0;
   }
 };
 #endif
