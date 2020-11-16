@@ -159,8 +159,8 @@ struct Control
 
   D3vector sine_field;
   bool  compute_sine_field;
-  D3vector cosine_field;
-  bool  compute_cosine_field;
+  D3vector gaussian_field;
+  bool  compute_gaussian_field;
   int blHF[3];
   double efield_timing[2];
   double btHF;
