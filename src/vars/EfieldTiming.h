@@ -63,7 +63,7 @@ class EfieldTiming : public Var
     if ( v1 < 0.0 )
     {
       if ( ui->oncoutpe() )
-        cout << "full width have max value must be > 0" << endl;
+        cout << "full width half max value must be > 0" << endl;
       return 1;
     }
 
