@@ -55,16 +55,15 @@ class EfieldTiming : public Var
     }
     
     double ev2au = 0.0367493;
-    //double sig = 2 * sqrt(2*log(2));
-    double sig = 2.3548;
+    double sig = 2.3548;  //2 * sqrt(2*log(2))
     double convert = atof(argv[2])*ev2au;
     double v0 = atof(argv[1]);
     double v1 = sig /convert; 
 
-    if ( v0 < 0.0 || v1 < 0.0 )
+    if ( v1 < 0.0 )
     {
       if ( ui->oncoutpe() )
-        cout << "timing values must be > 0" << endl;
+        cout << "full width have max value must be > 0" << endl;
       return 1;
     }
 
