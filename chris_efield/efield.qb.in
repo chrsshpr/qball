@@ -8,13 +8,12 @@ species oxygen /nas/longleaf/home/chrsshpr/pp/O_HSCV_PBE-1.0.xml
 atom O1 oxygen 0 -0.000027231 0.27619 
 atom H1 hydrogen 0 1.43622 -0.82857
 atom H2 hydrogen 0 -1.43619 -0.82857
-#set wf_dyn PSDA 
-#randomize_wf    
-#set threshold_scf 1e-10 5
-#set ecutprec 10 
-#run 0 300 
+set wf_dyn PSDA 
+randomize_wf    
+set threshold_scf 1e-10 5
+set ecutprec 10 
+run 0 300 
 #load -states states/gs 
-load -states states/kick
 set atoms_dyn IMPULSIVE 
 set wf_dyn ETRS
 set dt 0.05  
@@ -22,7 +21,6 @@ set TD_dt 0.05
 set wf_diag TDMLWF  
 set polarization TDMLWF 
 set gaussian_field x 0.001 6.3025
-set efield_timing 145 1 
-run 100 1 
-#save -states states/kick
+set efield_timing 150 1 
+run 8000 1 
 quit    
