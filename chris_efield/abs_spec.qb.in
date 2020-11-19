@@ -1,0 +1,25 @@
+set force_complex_wf ON  
+set nrowmax 44
+set xc PBE 
+set ecut 40  
+set cell 30 0 0   0 30 0    0 0 30 
+species hydrogen /nas/longleaf/home/chrsshpr/pp/H_HSCV_PBE-1.0.xml  
+species oxygen /nas/longleaf/home/chrsshpr/pp/O_HSCV_PBE-1.0.xml  
+atom O1 oxygen 0 -0.000027231 0.27619 
+atom H1 hydrogen 0 1.43622 -0.82857
+atom H2 hydrogen 0 -1.43619 -0.82857
+set wf_dyn PSDA 
+randomize_wf    
+set threshold_scf 1e-10 5
+set ecutprec 10 
+run 0 300 
+save -states states/gs
+set atoms_dyn IMPULSIVE 
+set wf_dyn ETRS
+set dt 0.05  
+set TD_dt 0.05 
+set wf_diag TDMLWF  
+#set polarization TDMLWF 
+apply_electric_field_pulse 0 0.001
+run 8000 1 
+quit    
