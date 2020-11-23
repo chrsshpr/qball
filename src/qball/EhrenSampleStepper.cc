@@ -299,11 +299,11 @@ void EhrenSampleStepper::step(int niter)
     if (s_.ctrl.compute_gaussian_field) // field = amp * sin(w(t-t0)) * exp(-(t-t0)^2/(2*s^2))
     {
          if(s_.ctrl.gaussian_field[0]==0)
-                s_.ctrl.e_field[0] = s_.ctrl.gaussian_field[1]*sin(s_.ctrl.gaussian_field[2]*(s_.ctrl.dt*iter-s_.ctrl.efield_timing[0]))*exp(-((s_.ctrl.dt*iter-s_.ctrl.efield_timing[0])*(s_.ctrl.dt*iter-s_.ctrl.efield_timing[0])/(2*(s_.ctrl.efield_timing[1]*s_.ctrl.efield_timing[1]))));
+                s_.ctrl.e_field[0] = s_.ctrl.gaussian_field[1]*sin(s_.ctrl.gaussian_field[2]*(s_.ctrl.dt*s_.ctrl.mditer-s_.ctrl.efield_timing[0]))*exp(-((s_.ctrl.dt*s_.ctrl.mditer-s_.ctrl.efield_timing[0])*(s_.ctrl.dt*s_.ctrl.mditer-s_.ctrl.efield_timing[0])/(2*(s_.ctrl.efield_timing[1]*s_.ctrl.efield_timing[1]))));
          if(s_.ctrl.gaussian_field[0]==1)
-                s_.ctrl.e_field[1] = s_.ctrl.gaussian_field[1]*sin(s_.ctrl.gaussian_field[2]*(s_.ctrl.dt*iter-s_.ctrl.efield_timing[0]))*exp(-((s_.ctrl.dt*iter-s_.ctrl.efield_timing[0])*(s_.ctrl.dt*iter-s_.ctrl.efield_timing[0])/(2*(s_.ctrl.efield_timing[1]*s_.ctrl.efield_timing[1]))));
+                s_.ctrl.e_field[1] = s_.ctrl.gaussian_field[1]*sin(s_.ctrl.gaussian_field[2]*(s_.ctrl.dt*s_.ctrl.mditer-s_.ctrl.efield_timing[0]))*exp(-((s_.ctrl.dt*s_.ctrl.mditer-s_.ctrl.efield_timing[0])*(s_.ctrl.dt*s_.ctrl.mditer-s_.ctrl.efield_timing[0])/(2*(s_.ctrl.efield_timing[1]*s_.ctrl.efield_timing[1]))));
          if(s_.ctrl.gaussian_field[0]==2)
-                s_.ctrl.e_field[2] = s_.ctrl.gaussian_field[1]*sin(s_.ctrl.gaussian_field[2]*(s_.ctrl.dt*iter-s_.ctrl.efield_timing[0]))*exp(-((s_.ctrl.dt*iter-s_.ctrl.efield_timing[0])*(s_.ctrl.dt*iter-s_.ctrl.efield_timing[0])/(2*(s_.ctrl.efield_timing[1]*s_.ctrl.efield_timing[1]))));
+                s_.ctrl.e_field[2] = s_.ctrl.gaussian_field[1]*sin(s_.ctrl.gaussian_field[2]*(s_.ctrl.dt*s_.ctrl.mditer-s_.ctrl.efield_timing[0]))*exp(-((s_.ctrl.dt*s_.ctrl.mditer-s_.ctrl.efield_timing[0])*(s_.ctrl.dt*s_.ctrl.mditer-s_.ctrl.efield_timing[0])/(2*(s_.ctrl.efield_timing[1]*s_.ctrl.efield_timing[1]))));
 
           if ( s_.ctxt_.oncoutpe() )
           	cout << setprecision(10) <<  " <Gaussian_efield: " << s_.ctrl.e_field[0] << " " << s_.ctrl.e_field[1] << " " << s_.ctrl.e_field[2] << "</Gaussian_efield" << endl;

@@ -410,7 +410,7 @@ void Bisection::compute_transform(const SlaterDet& sd)
   // adiag_ is resized by jade
 
   // diagonalize projectors
-  const int maxsweep = 500;
+  const int maxsweep = 20;
   const double tol = 1.e-8;
   int nsweep = jade_complex(maxsweep,tol,amat_,*u_,adiag_);
   //jade_complex(maxsweep,tol,amat_,*u_,adiag_);
