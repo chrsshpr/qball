@@ -111,6 +111,8 @@ Bisection::Bisection(const SlaterDet& sd, const int nlevels[3])
   // largest number of levels
   nlevelsmax_=max(nlevels[0],max(nlevels[1],nlevels[2]));
 
+  assert( nlevelsmax_ >0 );
+
   // real-space grid size for wave functions (are projected onto)
   np_[0] = sd.basis().np(0);
   np_[1] = sd.basis().np(1);
@@ -162,6 +164,7 @@ Bisection::Bisection(const SlaterDet& sd, const int nlevels[3])
     amat_[i] = new ComplexMatrix(c.context(),c.n(),c.n(),c.nb(),c.nb()); //CS
   // allocate rotation matrix
   u_ = new ComplexMatrix(c.context(),c.n(),c.n(),c.nb(),c.nb()); //CS
+  tmpmat_ = new ComplexMatrix(c.context(),c.n(),c.n(),c.nb(),c.nb()); //CS
 
   // matrices of real space wave functions in subdomains
   rmat_.resize( ndiv_[0]*ndiv_[1] );
@@ -199,6 +202,8 @@ Bisection::~Bisection(void)
   for ( int i = 0; i < nmat_; i++ ) delete amat_[i];
   delete u_;
   for ( int i = 0; i < rmat_.size(); i++ ) delete rmat_[i];
+  delete tmpmat_;
+  for ( int i = 0; i < rmat_.size(); i++ ) delete rmat_[i];
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -212,7 +217,7 @@ void Bisection::compute_transform(const SlaterDet& sd)
 
   const ComplexMatrix& c = sd.c();
   const vector<double>& occ = sd.occ();
-  assert(occ.size() == nst_);
+  //assert(occ.size() == nst_);
 
   tmap["wf FFT"].start();
   // Fourier transform states and save real-space values in
@@ -248,7 +253,7 @@ void Bisection::compute_transform(const SlaterDet& sd)
   for ( int i = 0; i < nmat_; i++ )
     amat_[i]->clear();
 
-  int size=amat_[0]->size();
+  //int size=amat_[0]->size();
 
   // allocate matrix for products of projected parts
   ComplexMatrix products(c.context(),c.n(),c.n(),c.nb(),c.nb());
@@ -276,6 +281,7 @@ void Bisection::compute_transform(const SlaterDet& sd)
             // add product to the matrix
             complex<double> *coeff_source=products.valptr(0);
             complex<double> *coeff_destination=amat_[imat]->valptr(0);
+	    const int size=amat_[imat]->size();
             for ( int i=0; i<size; i++ )
               coeff_destination[i]+=coeff_source[i];
           }
@@ -301,6 +307,8 @@ void Bisection::compute_transform(const SlaterDet& sd)
         // normalize coeffs
         complex<double> *coeff=amat_[imat]->valptr(0); 
         double fac = 1.0 / (np_[0]*np_[1]*np_[2]);
+        //double fac = 1.0 / (np_[0]*np_[1]*np_[2]);
+        const int size=amat_[imat]->size();
         for ( int i = 0; i < size; i++ )
           coeff[i] *= fac;
         imat++;
@@ -369,7 +377,7 @@ void Bisection::compute_transform(const SlaterDet& sd)
         // factor -2.0 in next line: G and -G 
         amat_[imat]->gemm('c','n',1.0,c_pz,c,0.0);
         // rank-1 update using first row of cd_proxy() and c_proxy
-        //amat_[imat]->zger(-1.0,c_pz,0,c,0);
+        amat_[imat]->zger(-1.0,c_pz,0,c,0);
         imat++;
       }
     }
@@ -410,9 +418,9 @@ void Bisection::compute_transform(const SlaterDet& sd)
   // adiag_ is resized by jade
 
   // diagonalize projectors
-  const int maxsweep = 500;
+  const int maxsweep = 20;
   const double tol = 1.e-8;
-  int nsweep = jade_complex(maxsweep,tol,amat_,*u_,adiag_);
+  int nsweep = jade_complex(maxsweep,tol,amat_,*u_,*tmpmat_,adiag_);
   //jade_complex(maxsweep,tol,amat_,*u_,adiag_);
   //cout << "Bisection::compute_transform: nsweep=" << nsweep
       //<< " maxsweep=" << maxsweep << " tol=" << tol << endl;
@@ -483,10 +491,10 @@ void Bisection::compute_localization(double epsilon)
         if ( overlap(i,j) )
           count++;
       }
-      //cout << "localization[" << i << "]: "
-          // << localization_[i] << " "
-           //<< bitset<30>(localization_[i]) << "  overlaps: "
-           //<< count << endl;
+      cout << "localization[" << i << "]: "
+           << localization_[i] << " "
+           << bitset<30>(localization_[i]) << "  overlaps: "
+           << count << endl;
       sum += count;
     }
 	 cout << "total overlaps: " << sum << " / " << nst_*nst_
@@ -502,11 +510,11 @@ void Bisection::compute_localization(double epsilon)
 ////////////////////////////////////////////////////////////////////////////////
 void Bisection::forward(SlaterDet& sd)
 {
-  forward(*u_,sd);
+  forward(*tmpmat_,sd);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void Bisection::forward(ComplexMatrix& u, SlaterDet& sd)
+void Bisection::forward(ComplexMatrix& tmpmat, SlaterDet& sd)
 {
   // apply the bisection transformation to the SlaterDet sd
   // apply the rotation u to sd.c()
@@ -514,17 +522,18 @@ void Bisection::forward(ComplexMatrix& u, SlaterDet& sd)
   ComplexMatrix cp(c);
   //DoubleMatrix cp_proxy(cp);
   //DoubleMatrix c_proxy(c);
-  c.gemm('n','n',1.0,cp,u,0.0);
+  c.gemm('n','n',1.0,cp,tmpmat,0.0);
+  //(sd.c()).gemm('n','n',1.0,c,u,0.0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 void Bisection::backward(SlaterDet& sd)
 {
-  backward(*u_,sd);
+  backward(*tmpmat_,sd);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void Bisection::backward(ComplexMatrix& u, SlaterDet& sd)
+void Bisection::backward(ComplexMatrix& tmpmat, SlaterDet& sd)
 {
   // apply the inverse bisection transformation to SlaterDet sd
   // apply rotation u^T to sd
@@ -532,7 +541,8 @@ void Bisection::backward(ComplexMatrix& u, SlaterDet& sd)
   ComplexMatrix cp(c);
   //DoubleMatrix cp_proxy(cp);
   //DoubleMatrix c_proxy(c);
-  c.gemm('n','c',1.0,cp,u,0.0);
+  c.gemm('n','c',1.0,cp,tmpmat,0.0);
+  //(sd.c()).gemm('n','c',1.0,c,u,0.0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -596,7 +606,7 @@ bool Bisection::check_amat(const ComplexMatrix &c)
       // factor -2.0 in next line: G and -G  
       bmat[imat]->gemm('c','n',1.0,cd,c,0.0);
       // rank-1 update using first row of cd_proxy() and c_proxy
-      //bmat[imat]->zger(-1.0,cd,0,c,0);
+      bmat[imat]->zger(-1.0,cd,0,c,0);
       imat++;
     }
 
@@ -623,7 +633,7 @@ bool Bisection::check_amat(const ComplexMatrix &c)
       // factor -2.0 in next line: G and -G
       bmat[imat]->gemm('c','n',1.0,cd,c,0.0);
       // rank-1 update using first row of cd_proxy() and c_proxy
-      //bmat[imat]->zger(-1.0,cd,0,c,0);
+      bmat[imat]->zger(-1.0,cd,0,c,0);
       imat++;
     }
 
@@ -651,7 +661,7 @@ bool Bisection::check_amat(const ComplexMatrix &c)
       // factor -2.0 in next line: G and -G
       bmat[imat]->gemm('c','n',1.0,cd,c,0.0);
       // rank-1 update using first row of cd_proxy() and c_proxy
-      //bmat[imat]->zger(-1.0,cd,0,c,0);
+      bmat[imat]->zger(-1.0,cd,0,c,0);
       imat++;
     }
   } // for l

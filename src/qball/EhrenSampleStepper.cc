@@ -71,7 +71,7 @@ using namespace std;
 ////////////////////////////////////////////////////////////////////////////////
 EhrenSampleStepper::EhrenSampleStepper(Sample& s, int nitscf, int nite) :
   SampleStepper(s), cd_(s), currd_(s, s.wf), ef_(s,s.wf,cd_),dwf(s.wf), wfv(s.wfv), nitscf_(nitscf),
-  nite_(nite)
+  nite_(nite) 
 {
    const string wf_dyn = s_.ctrl.wf_dyn;
    tddft_involved_ = s_.ctrl.tddft_involved;

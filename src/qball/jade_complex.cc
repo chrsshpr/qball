@@ -53,7 +53,8 @@
 using namespace std;
 
 int jade_complex(int maxsweep, double tol, vector<ComplexMatrix*> a,
-  ComplexMatrix& u, vector<vector<complex<double> > >& adiag)
+  //ComplexMatrix& u, vector<vector<complex<double> > >& adiag)
+  ComplexMatrix& u, ComplexMatrix& tmpmat, vector<vector<complex<double> > >& adiag)
 {
   Timer tm_comm;
   const bool debug_diag_sum = false;
@@ -578,7 +579,7 @@ int jade_complex(int maxsweep, double tol, vector<ComplexMatrix*> a,
   // The array a_aux may contain a (non-dummy) vector.
 
   // rotate columns of a and u to restore original order
-  complex<double> *tmpmat = new complex<double>[nloc*mloc];
+  complex<double> *tmpmat1 = new complex<double>[nloc*mloc];
   // rotate columns of a
   for ( int k = 0; k < a.size(); k++ )
   {
@@ -587,16 +588,16 @@ int jade_complex(int maxsweep, double tol, vector<ComplexMatrix*> a,
       // copy columns of a[k] to temporary array tmpmat in original order
       if ( jglobal[top[ipair]] >= 0 )
       {
-        memcpy(&tmpmat[ipair*mloc], acol[k][top[ipair]], mloc*sizeof(complex<double>));
+        memcpy(&tmpmat1[ipair*mloc], acol[k][top[ipair]], mloc*sizeof(complex<double>));
       }
       if ( jglobal[bot[nploc-ipair-1]] >= 0 )
       {
-        memcpy(&tmpmat[(nploc+ipair)*mloc],acol[k][bot[nploc-ipair-1]],
+        memcpy(&tmpmat1[(nploc+ipair)*mloc],acol[k][bot[nploc-ipair-1]],
                mloc*sizeof(complex<double>));
       }
     }
     // copy tmpmat back to a[k]
-    memcpy(acol[k][0],tmpmat,nloc*mloc*sizeof(complex<double>));
+    memcpy(acol[k][0],tmpmat1,nloc*mloc*sizeof(complex<double>));
   }
 
   // rotate columns of u
@@ -614,8 +615,8 @@ int jade_complex(int maxsweep, double tol, vector<ComplexMatrix*> a,
     }
   }
   // copy tmpmat back to u
-  memcpy(ucol[0],tmpmat,nloc*mloc*sizeof(complex<double>));
-  delete [] tmpmat;
+  //memcpy(ucol[0],tmpmat,nloc*mloc*sizeof(complex<double>));
+  //delete [] tmpmat;
 
   // compute diagonal values
   for ( int k = 0; k < a.size(); k++ )
