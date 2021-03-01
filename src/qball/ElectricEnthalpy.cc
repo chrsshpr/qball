@@ -341,7 +341,9 @@ void ElectricEnthalpy::update(void)
               const complex<double> fac = length(cell.a(idir))
                                * e_field_[idir] / ( 2.0 * M_PI );
 
-              for (int in = 0; in < nloc; in++)
+              //for (int in = 0; in < nloc; in++)
+	      int numbers[] = {0, 2, 3, 6};
+	      for (int in = 0; in< sizeof(numbers)/sizeof(int);in++)
               {
                 int ist = cp.jglobal(in);
                 std::complex<double> fac1 = adiag_inv_real[ist] * fac;
@@ -402,9 +404,9 @@ void ElectricEnthalpy::update(void)
     } // if finite_field_
   }
   dipole_total_ = dipole_ion_ + dipole_el_;
-  cell.fold_in_ws(dipole_ion_);
-  cell.fold_in_ws(dipole_el_);
-  cell.fold_in_ws(dipole_total_);
+  //cell.fold_in_ws(dipole_ion_);
+  //cell.fold_in_ws(dipole_el_);
+  //cell.fold_in_ws(dipole_total_);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
