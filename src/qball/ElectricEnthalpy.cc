@@ -225,7 +225,7 @@ void ElectricEnthalpy::update(void)
     if (pol_type_ == tdmlwf || pol_type_ == tdmlwf_ref) 
     { 
       tdmlwft_->compute_transform();
-      tdmlwft_->apply_transform(sd_); //Wavefunction must be in Wannier gauge 
+      //tdmlwft_->apply_transform(sd_); //Wavefunction must be in Wannier gauge 
       //if (s_.ctrl.wf_diag != "TDMLWF")
 	//cout << "<ERROR> Wavefunction must be in Wannier gauge! </ERROR>" << endl;
 	//throw;
@@ -402,9 +402,9 @@ void ElectricEnthalpy::update(void)
     } // if finite_field_
   }
   dipole_total_ = dipole_ion_ + dipole_el_;
-  //cell.fold_in_ws(dipole_ion_);
-  //cell.fold_in_ws(dipole_el_);
-  //cell.fold_in_ws(dipole_total_);
+  cell.fold_in_ws(dipole_ion_);
+  cell.fold_in_ws(dipole_el_);
+  cell.fold_in_ws(dipole_total_);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
