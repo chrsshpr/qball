@@ -32,7 +32,9 @@
 #include <cassert>
 #include <cmath>
 #include <algorithm> // fill
-
+#ifdef USE_MPI
+#include <mpi.h>
+#endif
 #include "Timer.h"
 #include "Context.h"
 #include <math/matrix.h>
@@ -225,7 +227,7 @@ void ElectricEnthalpy::update(void)
     if (pol_type_ == tdmlwf || pol_type_ == tdmlwf_ref) 
     { 
       tdmlwft_->compute_transform();
-      tdmlwft_->apply_transform(sd_); //Wavefunction must be in Wannier gauge 
+      //tdmlwft_->apply_transform(sd_); //Wavefunction must be in Wannier gauge 
       //if (s_.ctrl.wf_diag != "TDMLWF")
 	//cout << "<ERROR> Wavefunction must be in Wannier gauge! </ERROR>" << endl;
 	//throw;
@@ -343,21 +345,35 @@ void ElectricEnthalpy::update(void)
 
               for (int in = 0; in < nloc; in++)
               {
+		//if (in < nloc) {
+		  //if ( onpe0_ ) {
+	        //cout << nloc << " : nloc" << endl;	
+	        //if ( z > -5) {		  
+	        //cout  << s_.ctxt_.mype() << " z: " << z << endl;
+//cout << " YES " << endl;
+	//	}
+		//}
                 int ist = cp.jglobal(in);
-                std::complex<double> fac1 = adiag_inv_real[ist] * fac;
-                std::complex<double> fac2 = adiag_inv_imag[ist] * fac;
+		D3vector ctr = tdmlwft_->center(ist);
+                double z = ctr.z;
+		if ( z > -5) {
+		  //cout << " z: " << z << endl;
+	        //cout << ist << ": ist " <<  " my proc: " << s_.ctxt_.mype() << endl;
+                  std::complex<double> fac1 = adiag_inv_real[ist] * fac;
+                  std::complex<double> fac2 = adiag_inv_imag[ist] * fac;
 
-                std::complex<double> *ptr1 = &cp[in*mloc],
-                       *ptrcos = &ccos[in*mloc],
-                       *ptrsin = &csin[in*mloc];
+                  std::complex<double> *ptr1 = &cp[in*mloc],
+                         *ptrcos = &ccos[in*mloc],
+                         *ptrsin = &csin[in*mloc];
 
-	        for (int ii=0; ii<mloc; ii++)
-		  {
-		   ptr1[ii] += (fac2 * ptrcos[ii]);
-		   ptr1[ii] += (fac1 * ptrsin[ii]);
-		  }
+	          for (int ii=0; ii<mloc; ii++)
+		    {
+		     ptr1[ii] += (fac2 * ptrcos[ii]);
+		     ptr1[ii] += (fac1 * ptrsin[ii]);
+		    }
+		}
                }
-          } 
+          }
           else if ( pol_type_ == mlwf_ref || pol_type_ == mlwf_ref_q )
           {
             // MLWF_REF part: real-space correction
@@ -402,9 +418,9 @@ void ElectricEnthalpy::update(void)
     } // if finite_field_
   }
   dipole_total_ = dipole_ion_ + dipole_el_;
-  //cell.fold_in_ws(dipole_ion_);
-  //cell.fold_in_ws(dipole_el_);
-  //cell.fold_in_ws(dipole_total_);
+  cell.fold_in_ws(dipole_ion_);
+  cell.fold_in_ws(dipole_el_);
+  cell.fold_in_ws(dipole_total_);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
