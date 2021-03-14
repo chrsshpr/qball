@@ -32,9 +32,6 @@
 #include <cassert>
 #include <cmath>
 #include <algorithm> // fill
-#ifdef USE_MPI
-#include <mpi.h>
-#endif
 #include "Timer.h"
 #include "Context.h"
 #include <math/matrix.h>
