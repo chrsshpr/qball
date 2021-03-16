@@ -42,12 +42,13 @@
 #include <math/matrix.h>
 #include <fstream>
 #include "Context.h"
+#include "TDExchangeOperator.h"
 
 using namespace std;
 
 ////////////////////////////////////////////////////////////////////////////////
-TDMLWFTransform::TDMLWFTransform(const SlaterDet& sd) : sd_(sd),
-cell_(sd.basis().cell()), ctxt_(sd.context()),  bm_(BasisMapping(sd.basis()))
+TDMLWFTransform::TDMLWFTransform(const SlaterDet& sd) : sd_(sd),  
+cell_(sd.basis().cell()), ctxt_(sd.context()),  bm_(BasisMapping(sd.basis())) 
 {
   a_.resize(6);
   adiag_.resize(6);
@@ -279,6 +280,70 @@ D3vector TDMLWFTransform::center(int i)
   const double z = (t0*cell_.a(0).z + t1*cell_.a(1).z + t2*cell_.a(2).z);
 
   return D3vector(x,y,z);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+double TDMLWFTransform::distance(int i, int j)
+{
+  // distannce between all pairs for exchange
+  D3vector distance(0.0,0.0,0.0);
+  assert(i>=0 && i<sd_.nst());
+  assert(j>=0 && j<sd_.nst());    
+      //if (i !=j)
+     // {
+  distance = center(i) -center(j);
+  double square = distance.x*distance.x + distance.y*distance.y + distance.z*distance.z;     
+  return sqrt(square);
+     // }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+bool TDMLWFTransform::overlap(double epsilon, int i, int j) 
+{
+  // overlap: return true if the functions i and j overlap according to distance 
+  if ( distance(i,j) >= epsilon )
+      return false;
+  // return true if the states overlap
+  return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+double TDMLWFTransform::total_overlaps(double epsilon)
+{
+  int sum = 0;
+  for ( int i = 0; i < sd_.nst(); i++ )
+  {
+    int count = 0;
+    for ( int j = 0; j < sd_.nst(); j++ )
+    {
+      if ( overlap(epsilon,i,j) )
+        count++;
+    }
+    sum += count;
+  }
+       cout << "total overlaps: " << sum << " / " << sd_.nst()*sd_.nst()
+       << " = " << ((double) sum)/(sd_.nst()*sd_.nst()) << endl;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+double TDMLWFTransform::pair_fraction(double epsilon) 
+{
+  // pair_fraction: return fraction of pairs having non-zero overlap
+  // count pairs (i,j) having non-zero overlap for i != j only
+  int sum = 0;
+  for ( int i = 0; i < sd_.nst(); i++ )
+  {
+    int count = 0;
+    for ( int j = i+1; j < sd_.nst() ; j++ )
+    {
+      if ( overlap(epsilon,i,j) )
+        count++;
+    }
+    sum += count;
+  }
+  // add overlap with self: (i,i)
+  sum += sd_.nst();
+  return ((double) sum)/((sd_.nst()*(sd_.nst()+1))/2);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

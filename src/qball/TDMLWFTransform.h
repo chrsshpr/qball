@@ -47,6 +47,7 @@ class TDMLWFTransform
 {
   private:
 
+
   const SlaterDet& sd_;
   const UnitCell& cell_;
   const Context& ctxt_;
@@ -87,6 +88,12 @@ class TDMLWFTransform
   double spread2(void);
   double spread(int i);
   double spread(void);
+
+  double distance(int i, int j);
+  bool overlap(double epsilon, int i, int j);  
+  double pair_fraction(double epsilon) ;
+  double total_overlaps(double epsilon);
+
   D3vector center(int i);
   D3vector dipole(void);
 

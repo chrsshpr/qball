@@ -1577,9 +1577,11 @@ if (s_.ctrl.saveholefreq > 0)
 
        if ( compute_mlwf )
           tdmlwft->apply_transform(sd);
-          
+ 
           if ( oncoutpe )
           {
+             //tdmlwft->total_overlaps(7);
+             //cout << "pair f " << tdmlwft->pair_fraction(10) << endl;
              cout << " <mlwf_set size=\"" << sd.nst() << "\">" << endl;
              for ( int i = 0; i < sd.nst(); i++ )
              {
@@ -1595,6 +1597,16 @@ if (s_.ctrl.saveholefreq > 0)
                      << endl;
              }
              cout << " </mlwf_set>" << endl;
+             /*for ( int i = 0; i < sd.nst(); i++ )
+             {
+               for ( int j = 0; j < sd.nst(); j++ )
+               {
+                 double distance = tdmlwft ->distance(i,j);
+                 bool overlap = tdmlwft -> overlap(7,i,j);
+                 cout << " <distance> " << distance << " </distance>" << i << " " << j << " " << overlap << endl;
+               }
+             }*/
+
              D3vector edipole = tdmlwft->dipole();
              cout << " <electronic_dipole> " << edipole
                   << " </electronic_dipole>" << endl;
