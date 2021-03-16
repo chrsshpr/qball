@@ -47,6 +47,7 @@
 
 #include "TDExchangeOperator.h"
 #include "Bisection.h"
+#include "TDMLWFTransform.h"
 
 using namespace std;
 //#define TIMING 
@@ -981,6 +982,33 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
     //ComplexMatrix test(ctxt,nst,nst,nb,nb);
     //test.gemm('c','n',1.0,sd.c(),sd1.c(),0.0);
     //test.print(cout);
+
+    const bool oncoutpe = s_.ctxt_.oncoutpe();
+    TDMLWFTransform* tdmlwft=0;
+    const bool compute_mlwf = s_.ctrl.wf_diag == "TDMLWF";
+    if ( compute_mlwf ) 
+    { 
+      assert(s_.wf.nspin()==1); //TDMLWF only works with spin unpolarized systems
+      tdmlwft = new TDMLWFTransform(*wf.sd(0,0));
+      SlaterDet& sd = *(wf.sd(0,0));
+      //tdmlwft->update();
+      //tdmlwft->compute_transform();
+
+      if ( compute_mlwf )
+        //tdmlwft->apply_transform(sd);
+        if ( oncoutpe ) {
+          cout << "pair fraction: " << tdmlwft->pair_fraction(s_.ctrl.btHF) << endl;
+          tdmlwft->total_overlaps(s_.ctrl.btHF);
+          for ( int i = 0; i < sd.nst(); i++ )//sd.nstloc(); i++ )
+          {   
+            for ( int j = 0; j < sd.nst(); j++ )
+            {
+              bool overlap = tdmlwft -> overlap(s_.ctrl.btHF,i,j);
+              cout << i << " " << j << " " << overlap << " <overlap/>" <<  endl;
+            } 
+          }
+        }
+    }
 
     // if using bisection, localize the wave functions
     if ( use_bisection_ )

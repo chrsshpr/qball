@@ -472,7 +472,7 @@ void Bisection::compute_localization(double epsilon)
     {
       if ( abs(adiag_[imat][n]) < epsilon )
         localization_[n] += 1<<(2*imat);
-      else if ( abs(adiag_[imat][n]) > 1.0-epsilon)
+      else if ( abs(adiag_[imat][n]) > 1.0-epsilon) 
         localization_[n] += 1<<(2*imat+1);
       else
         localization_[n] += (1<<(2*imat)) + (1<<(2*imat+1));
@@ -491,14 +491,14 @@ void Bisection::compute_localization(double epsilon)
         if ( overlap(i,j) )
           count++;
       }
-      cout << "localization[" << i << "]: "
-           << localization_[i] << " "
-           << bitset<30>(localization_[i]) << "  overlaps: "
-           << count << endl;
-      sum += count;
+      //cout << "localization[" << i << "]: "
+           //<< localization_[i] << " "
+           //<< bitset<30>(localization_[i]) << "  overlaps: "
+           //<< count << endl;
+      //sum += count;
     }
-	 cout << "total overlaps: " << sum << " / " << nst_*nst_
-         << " = " << ((double) sum)/(nst_*nst_) << endl;
+	 //cout << "total overlaps: " << sum << " / " << nst_*nst_
+         //<< " = " << ((double) sum)/(nst_*nst_) << endl;
   }
 
   // broadcast localization to all tasks to ensure consistency
