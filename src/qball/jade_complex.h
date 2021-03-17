@@ -25,7 +25,7 @@
 #include <vector>
 #include "jacobi_eigenvalue.h"
 int jade_complex(int maxsweep, double tol, std::vector<ComplexMatrix*> a,
-         ComplexMatrix& u, ComplexMatrix& tmpmat, std::vector<std::vector<std::complex<double> > > &adiag);
-         //ComplexMatrix& u, std::vector<std::vector<std::complex<double> > > &adiag);
+         //ComplexMatrix& u, ComplexMatrix& tmpmat, std::vector<std::vector<std::complex<double> > > &adiag);
+         ComplexMatrix& u, std::vector<std::vector<std::complex<double> > > &adiag);
 void jacobi_eigenvalue( int n, double a[], int it_max, double v[],
   double d[], int &it_num, int &rot_num );

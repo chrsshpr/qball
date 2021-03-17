@@ -39,7 +39,6 @@
 #include <deque>
 #include "CurrentDensity.h"
 
-class Bisection;
 class WavefunctionStepper;
 class IonicStepper;
 using namespace std;
@@ -58,12 +57,6 @@ class EhrenSampleStepper : public SampleStepper
   CurrentDensity currd_;
   EnergyFunctional ef_;
 
-  bool use_bisection_;
-  vector<Bisection*> bisection_;
-  vector<ComplexMatrix*> uc_;
-  vector<long int> localization_; 
-
- 
   WavefunctionStepper* wf_stepper;
   IonicStepper* ionic_stepper;
 

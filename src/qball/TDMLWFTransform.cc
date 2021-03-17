@@ -222,8 +222,8 @@ void TDMLWFTransform::compute_transform(void)
 {
   const int maxsweep = 100;
   const double tol = 1.e-8;
-  //int nsweep = jade_complex(maxsweep,tol,a_,*u_,adiag_); 
-  int nsweep = jade_complex(maxsweep,tol,a_,*u_,*tmpmat_,adiag_); 
+  int nsweep = jade_complex(maxsweep,tol,a_,*u_,adiag_); 
+  //int nsweep = jade_complex(maxsweep,tol,a_,*u_,*tmpmat_,adiag_); 
   // Joint approximate diagonalization step.
 }
 
@@ -402,6 +402,6 @@ void TDMLWFTransform::apply_transform(SlaterDet& sd)
 {
   // proxy double matrix c. 
   ComplexMatrix c(sd.c());  //DCY
-  //(sd.c()).gemm('n','n',1.0,c,*u_,0.0);
-  (sd.c()).gemm('n','n',1.0,c,*tmpmat_,0.0);
+  (sd.c()).gemm('n','n',1.0,c,*u_,0.0);
+  //(sd.c()).gemm('n','n',1.0,c,*tmpmat_,0.0);
 }

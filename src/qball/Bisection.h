@@ -71,7 +71,7 @@ class Bisection
     std::vector<ComplexMatrix*> amat_;
     std::vector<std::vector<std::complex<double> > > adiag_; 
     ComplexMatrix *u_;
-    ComplexMatrix *tmpmat_;
+    //ComplexMatrix *tmpmat_;
 
     // test function
     bool check_amat(const ComplexMatrix &c);
@@ -83,9 +83,9 @@ class Bisection
     void compute_transform(const SlaterDet& sd);
     void compute_localization(double epsilon);
     void forward(SlaterDet& sd);
-    void forward(ComplexMatrix& tmpmat, SlaterDet& sd);
+    void forward(ComplexMatrix& u, SlaterDet& sd);
     void backward(SlaterDet& sd);
-    void backward(ComplexMatrix& tmpmat, SlaterDet& sd);
+    void backward(ComplexMatrix& u, SlaterDet& sd);
 
     int nmat(void) const { return nmat_; }
     long int localization(int i) const { return localization_[i]; }
@@ -94,7 +94,7 @@ class Bisection
     bool overlap(int i, int j) const;
     bool overlap(const std::vector<long int>& loc, int i, int j) const;
     const ComplexMatrix& u(void) const { return *u_; }
-    const ComplexMatrix& tmpmat(void) const { return *tmpmat_; }
+    //const ComplexMatrix& tmpmat(void) const { return *tmpmat_; }
     double pair_fraction(void) const;
     double size(int i) const;
     double total_size(void) const;

@@ -1020,7 +1020,7 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
       localization_ = bisection_[ispin]->localization();
 
       // copy the orthogonal transformation u to uc_[ispin]
-      *uc_[ispin] = bisection_[ispin]->tmpmat();
+      *uc_[ispin] = bisection_[ispin]->u();
 
       bisection_[ispin]->forward(*uc_[ispin], *wfc_.sd(ispin,0));
       //bisection_[ispin]->forward(*uc_[ispin], *wfc_.sd(ispin,0)); //wfc_

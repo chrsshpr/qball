@@ -164,7 +164,7 @@ Bisection::Bisection(const SlaterDet& sd, const int nlevels[3])
     amat_[i] = new ComplexMatrix(c.context(),c.n(),c.n(),c.nb(),c.nb()); //CS
   // allocate rotation matrix
   u_ = new ComplexMatrix(c.context(),c.n(),c.n(),c.nb(),c.nb()); //CS
-  tmpmat_ = new ComplexMatrix(c.context(),c.n(),c.n(),c.nb(),c.nb()); //CS
+  //tmpmat_ = new ComplexMatrix(c.context(),c.n(),c.n(),c.nb(),c.nb()); //CS
 
   // matrices of real space wave functions in subdomains
   rmat_.resize( ndiv_[0]*ndiv_[1] );
@@ -202,8 +202,8 @@ Bisection::~Bisection(void)
   for ( int i = 0; i < nmat_; i++ ) delete amat_[i];
   delete u_;
   for ( int i = 0; i < rmat_.size(); i++ ) delete rmat_[i];
-  delete tmpmat_;
-  for ( int i = 0; i < rmat_.size(); i++ ) delete rmat_[i];
+  //delete tmpmat_;
+  //for ( int i = 0; i < rmat_.size(); i++ ) delete rmat_[i];
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -420,7 +420,7 @@ void Bisection::compute_transform(const SlaterDet& sd)
   // diagonalize projectors
   const int maxsweep = 20;
   const double tol = 1.e-8;
-  int nsweep = jade_complex(maxsweep,tol,amat_,*u_,*tmpmat_,adiag_);
+  int nsweep = jade_complex(maxsweep,tol,amat_,*u_,adiag_);
   //jade_complex(maxsweep,tol,amat_,*u_,adiag_);
   //cout << "Bisection::compute_transform: nsweep=" << nsweep
       //<< " maxsweep=" << maxsweep << " tol=" << tol << endl;
@@ -510,11 +510,11 @@ void Bisection::compute_localization(double epsilon)
 ////////////////////////////////////////////////////////////////////////////////
 void Bisection::forward(SlaterDet& sd)
 {
-  forward(*tmpmat_,sd);
+  forward(*u_,sd);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void Bisection::forward(ComplexMatrix& tmpmat, SlaterDet& sd)
+void Bisection::forward(ComplexMatrix& u, SlaterDet& sd)
 {
   // apply the bisection transformation to the SlaterDet sd
   // apply the rotation u to sd.c()
@@ -522,18 +522,18 @@ void Bisection::forward(ComplexMatrix& tmpmat, SlaterDet& sd)
   ComplexMatrix cp(c);
   //DoubleMatrix cp_proxy(cp);
   //DoubleMatrix c_proxy(c);
-  c.gemm('n','n',1.0,cp,tmpmat,0.0);
+  c.gemm('n','n',1.0,cp,u,0.0);
   //(sd.c()).gemm('n','n',1.0,c,u,0.0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 void Bisection::backward(SlaterDet& sd)
 {
-  backward(*tmpmat_,sd);
+  backward(*u_,sd);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void Bisection::backward(ComplexMatrix& tmpmat, SlaterDet& sd)
+void Bisection::backward(ComplexMatrix& u, SlaterDet& sd)
 {
   // apply the inverse bisection transformation to SlaterDet sd
   // apply rotation u^T to sd
@@ -541,7 +541,7 @@ void Bisection::backward(ComplexMatrix& tmpmat, SlaterDet& sd)
   ComplexMatrix cp(c);
   //DoubleMatrix cp_proxy(cp);
   //DoubleMatrix c_proxy(c);
-  c.gemm('n','c',1.0,cp,tmpmat,0.0);
+  c.gemm('n','c',1.0,cp,u,0.0);
   //(sd.c()).gemm('n','c',1.0,c,u,0.0);
 }
 
