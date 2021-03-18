@@ -191,7 +191,8 @@ ExchangeOperator::ExchangeOperator( Sample& s, double alpha_sx,
     statej_[i].resize(np012loc_);
   }
 
-  use_bisection_ = s.ctrl.btHF > 0.0;
+  //use_bisection_ = s.ctrl.btHF > 0.0;
+  use_bisection_ = s.ctrl.btHF < 0.0; 
 
   // if only at gamma
   if ( gamma_only_ )
@@ -971,7 +972,7 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
     SlaterDet& sd = *(wfc_.sd(ispin,0)); //wfc_
 
     // use copy to correctly read empty state occupations 
-    //SlaterDet& sd_c = *(wf.sd(ispin,0));
+    //SlaterDet& sd_c = *(wfc_.sd(0,0));
 
     ComplexMatrix& c = sd.c();
     //ComplexMatrix& c1 = sd_c.c();
@@ -989,10 +990,10 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
     if ( compute_mlwf ) 
     { 
       assert(s_.wf.nspin()==1); //TDMLWF only works with spin unpolarized systems
-      tdmlwft = new TDMLWFTransform(*wf.sd(0,0));
-      SlaterDet& sd = *(wf.sd(0,0));
-      //tdmlwft->update();
-      //tdmlwft->compute_transform();
+      tdmlwft = new TDMLWFTransform(*wfc_.sd(0,0));
+      SlaterDet& sd = *(wfc_.sd(0,0));
+      tdmlwft->update();
+      tdmlwft->compute_transform();
 
       if ( compute_mlwf )
         //tdmlwft->apply_transform(sd);
@@ -1161,8 +1162,10 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
             int iGlobJ = c.jglobal(j);
         
             // determine the overlap between those two states
-            bool overlap_ij = ( !use_bisection_ ||
-              bisection_[ispin]->overlap(localization_,iGlobI,iGlobJ) );
+            //bool overlap_ij = ( !use_bisection_ ||
+              //bisection_[ispin]->overlap(localization_,iGlobI,iGlobJ) );
+            bool overlap_ij = ( !compute_mlwf  ||  
+	      tdmlwft -> overlap(s_.ctrl.btHF,iGlobI,iGlobJ) );
 
             // use the chess board condition to
             // optimize the distribution of work on
