@@ -984,8 +984,9 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
 
     const bool oncoutpe = s_.ctxt_.oncoutpe();
     TDMLWFTransform* tdmlwft=0;
+    tddft_involved_ = s_.ctrl.tddft_involved;
 
-    if ( compute_mlwf ) 
+    if ( compute_mlwf )
     { 
       assert(s_.wf.nspin()==1); //TDMLWF pair selection only works with spin unpolarized systems
       tdmlwft = new TDMLWFTransform(*wf.sd(0,0));
@@ -993,8 +994,8 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
       tdmlwft->update();
       tdmlwft->compute_transform();
 
-      if ( compute_mlwf )
-        //tdmlwft->apply_transform(sd);
+      if ( !tddft_involved_ )  // for non-tddft, apply transfrom so wavefxn remains in wannier gauage 
+        tdmlwft->apply_transform(sd);
         if ( oncoutpe ) {
           cout << "pair fraction: " << tdmlwft->pair_fraction(s_.ctrl.MLWFDist) << endl;
           tdmlwft->total_overlaps(s_.ctrl.MLWFDist);
@@ -1007,6 +1008,21 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
             } 
            }
         }
+
+      else  // transform is applied with TDMLWF diagonalization for TDDFT 
+        //tdmlwft->apply_transform(sd);
+        if ( oncoutpe ) {
+          cout << "pair fraction: " << tdmlwft->pair_fraction(s_.ctrl.MLWFDist) << endl;
+          tdmlwft->total_overlaps(s_.ctrl.MLWFDist);
+           for ( int i = 0; i < sd.nst(); i++ )
+           {
+            for ( int j = 0; j < sd.nst(); j++ )
+            {
+              bool overlap = tdmlwft -> overlap(s_.ctrl.MLWFDist,i,j);
+              cout << i << " " << j << " " << overlap << " <overlap/> " << tdmlwft->distance(i,j) << " distance " <<  endl;
+            }
+           }
+        } 
     }
 
     // if using bisection, localize the wave functions

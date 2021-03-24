@@ -176,6 +176,7 @@ class ExchangeOperator
   // bisection
   bool use_bisection_;
   bool compute_mlwf;
+  bool tddft_involved_;
   vector<Bisection*> bisection_;
   vector<ComplexMatrix*> uc_;
   vector<long int> localization_;
