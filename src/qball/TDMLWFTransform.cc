@@ -221,7 +221,7 @@ void TDMLWFTransform::update(void)
 void TDMLWFTransform::compute_transform(void)
 {
   const int maxsweep = 100;
-  const double tol = 1.e-8;
+  const double tol = 1.e-5;
   int nsweep = jade_complex(maxsweep,tol,a_,*u_,adiag_); 
   //int nsweep = jade_complex(maxsweep,tol,a_,*u_,*tmpmat_,adiag_); 
   // Joint approximate diagonalization step.
@@ -291,7 +291,7 @@ double TDMLWFTransform::distance(int i, int j)
   assert(j>=0 && j<sd_.nst());    
       //if (i !=j)
      // {
-  distance = center(i) -center(j);
+  distance = center(i) - center(j);
   double square = distance.x*distance.x + distance.y*distance.y + distance.z*distance.z;     
   return sqrt(square);
      // }
@@ -301,10 +301,11 @@ double TDMLWFTransform::distance(int i, int j)
 bool TDMLWFTransform::overlap(double epsilon, int i, int j) 
 {
   // overlap: return true if the functions i and j overlap according to distance 
-  if ( distance(i,j) >= epsilon )
-      return false;
-  // return true if the states overlap
-  return true;
+  if ( distance(i,j) <= epsilon || distance(i,j) >= (sqrt(length(cell_.a(0))*length(cell_.a(0)) + length(cell_.a(1))*length(cell_.a(1)) + length(cell_.a(2))*length(cell_.a(2))) - epsilon))
+      return true;  //need sqrt(a0^2 + a1^2 + a2^2) for cell diagonal distance. Diagonal dist - epsilon for pbc  
+
+  // return false if the states don't overlap
+  return false;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -323,6 +324,9 @@ double TDMLWFTransform::total_overlaps(double epsilon)
   }
        cout << "total overlaps: " << sum << " / " << sd_.nst()*sd_.nst()
        << " = " << ((double) sum)/(sd_.nst()*sd_.nst()) << endl;
+       //cout << " Cell paramters " << " length x: " << length(cell_.a(0)) << " length y: " << length(cell_.a(1)) 
+       //<< " length z: " << length(cell_.a(2)) << endl;
+       cout << " pbc condition: " << sqrt(length(cell_.a(0))*length(cell_.a(0)) + length(cell_.a(1))*length(cell_.a(1)) + length(cell_.a(2))*length(cell_.a(2))) - epsilon << endl;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
