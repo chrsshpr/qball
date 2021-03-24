@@ -78,7 +78,7 @@ class MLWFDist : public Var
 
   MLWFDist(Sample *sample) : s(sample)
   {
-    s->ctrl.MLWFDist = 100000;
+    s->ctrl.MLWFDist = 0;
   }
 };
 #endif

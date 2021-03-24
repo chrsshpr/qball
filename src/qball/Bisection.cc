@@ -495,10 +495,10 @@ void Bisection::compute_localization(double epsilon)
            //<< localization_[i] << " "
            //<< bitset<30>(localization_[i]) << "  overlaps: "
            //<< count << endl;
-      //sum += count;
+      sum += count;
     }
-	 //cout << "total overlaps: " << sum << " / " << nst_*nst_
-         //<< " = " << ((double) sum)/(nst_*nst_) << endl;
+	 cout << "total overlaps: " << sum << " / " << nst_*nst_
+         << " = " << ((double) sum)/(nst_*nst_) << endl;
   }
 
   // broadcast localization to all tasks to ensure consistency
