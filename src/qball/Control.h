@@ -161,6 +161,7 @@ struct Control
   bool  compute_sine_field ;
   int blHF[3];
   double btHF;
+  double MLWFDist;
   double hf;
   double alpha_PBE0;
   double alpha_RSH;

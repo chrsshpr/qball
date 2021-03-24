@@ -53,8 +53,8 @@ class ExchangeOperator
   // copy of wf
   Wavefunction wfc_;
 
-  double compute_exchange_for_general_case_(const Wavefunction& wf,
-    Wavefunction* dwf, bool compute_stress);
+  //double compute_exchange_for_general_case_(const Wavefunction& wf,
+   //Wavefunction* dwf, bool compute_stress);
   double compute_exchange_at_gamma_(const Wavefunction &wf, Wavefunction* dwf,
     bool compute_stress);
   void   apply_VXC_(double mix, Wavefunction& wf_ref,
@@ -175,6 +175,7 @@ class ExchangeOperator
 
   // bisection
   bool use_bisection_;
+  bool compute_mlwf;
   vector<Bisection*> bisection_;
   vector<ComplexMatrix*> uc_;
   vector<long int> localization_;

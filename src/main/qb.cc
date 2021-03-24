@@ -189,6 +189,7 @@ using namespace std;
 #include <vars/VdW.h>
 #include <vars/BlHF.h>
 #include <vars/BtHF.h>
+#include <vars/MLWFDist.h>
 
 #ifdef HAVE_BGQLIBS
 #include <spi/include/kernel/process.h>
@@ -382,6 +383,7 @@ int main(int argc, char **argv, char **envp)
   ui->addVar(new MuRSH(s));
   ui->addVar(new BlHF(s));
   ui->addVar(new BtHF(s));
+  ui->addVar(new MLWFDist(s));
   ui->addVar(new Cell(s));
   ui->addVar(new CellDyn(s));
   ui->addVar(new CellLock(s));

@@ -52,7 +52,7 @@
 using namespace std;
 //#define TIMING 
 //#define DEBUG 
-#define LOAD_MATRIX 
+//#define LOAD_MATRIX 
 #define Tag_NumberOfStates 1
 #define Tag_Occupation 2
 #define Tag_Exchange 3
@@ -191,8 +191,8 @@ ExchangeOperator::ExchangeOperator( Sample& s, double alpha_sx,
     statej_[i].resize(np012loc_);
   }
 
-  //use_bisection_ = s.ctrl.btHF > 0.0;
-  use_bisection_ = s.ctrl.btHF < 0.0; 
+  use_bisection_ = s.ctrl.btHF > 0.0;
+  compute_mlwf = s.ctrl.MLWFDist > 0.0;
 
   // if only at gamma
   if ( gamma_only_ )
@@ -257,8 +257,8 @@ double ExchangeOperator::update_energy(bool compute_stress)
   if ( gamma_only_ )
     return eex_ = compute_exchange_at_gamma_(s_.wf, 0, compute_stress);
 
-  else
-    return eex_ = compute_exchange_for_general_case_(s_.wf, 0, compute_stress);
+  //else
+    //return eex_ = compute_exchange_for_general_case_(s_.wf, 0, compute_stress);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -268,8 +268,8 @@ double ExchangeOperator::update_operator(bool compute_stress)
   // compute exchange energy and derivatives
   if ( gamma_only_ )
     eex_ = compute_exchange_at_gamma_(s_.wf, &dwf0_, compute_stress);
-  else
-    eex_ = compute_exchange_for_general_case_(s_.wf, &dwf0_, compute_stress);
+  //else
+    //eex_ = compute_exchange_for_general_case_(s_.wf, &dwf0_, compute_stress);
 
   // wf0_ is kept as a reference state
   wf0_ = s_.wf;
@@ -346,7 +346,7 @@ void ExchangeOperator::cell_moved(void)
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
-
+/*
 double ExchangeOperator::compute_exchange_for_general_case_
   (const Wavefunction& wf, Wavefunction* dwf, bool compute_stress)
 {
@@ -941,7 +941,7 @@ double ExchangeOperator::compute_exchange_for_general_case_
   tm.stop();
   return exchange_sum;
 }
-//*/
+*/
 ////////////////////////////////////////////////////////////////////////////////
 double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
   Wavefunction* dwf, bool compute_stress)
@@ -952,8 +952,7 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
   wfc_ = wf;
   //wfc_.update_occ(s_.ctrl.smearing_width,s_.ctrl.smearing_ngauss);
   cout << setprecision(10);
-  //const double omega = wfc_.cell().volume();
-  //const int nspin = wfc_.nspin();
+
   const double omega = wfc_.cell().volume();
   const int nspin = wfc_.nspin();
   // spin factor for the pair densities: 0.5 if 1 spin, 1 if nspin==2
@@ -975,7 +974,6 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
     //SlaterDet& sd_c = *(wfc_.sd(0,0));
 
     ComplexMatrix& c = sd.c();
-    //ComplexMatrix& c1 = sd_c.c();
     const int nst = sd.nst();
 
     //const Context &ctxt = s_.wf.sd(0,0)->c().context();
@@ -986,28 +984,28 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
 
     const bool oncoutpe = s_.ctxt_.oncoutpe();
     TDMLWFTransform* tdmlwft=0;
-    const bool compute_mlwf = s_.ctrl.wf_diag == "TDMLWF";
+
     if ( compute_mlwf ) 
     { 
-      assert(s_.wf.nspin()==1); //TDMLWF only works with spin unpolarized systems
-      tdmlwft = new TDMLWFTransform(*wfc_.sd(0,0));
-      SlaterDet& sd = *(wfc_.sd(0,0));
+      assert(s_.wf.nspin()==1); //TDMLWF pair selection only works with spin unpolarized systems
+      tdmlwft = new TDMLWFTransform(*wf.sd(0,0));
+      SlaterDet& sd = *(wf.sd(0,0));
       tdmlwft->update();
       tdmlwft->compute_transform();
 
       if ( compute_mlwf )
         //tdmlwft->apply_transform(sd);
         if ( oncoutpe ) {
-          cout << "pair fraction: " << tdmlwft->pair_fraction(s_.ctrl.btHF) << endl;
-          tdmlwft->total_overlaps(s_.ctrl.btHF);
-          for ( int i = 0; i < sd.nst(); i++ )//sd.nstloc(); i++ )
-          {   
-            for ( int j = 0; j < sd.nst(); j++ )
+          cout << "pair fraction: " << tdmlwft->pair_fraction(s_.ctrl.MLWFDist) << endl;
+          tdmlwft->total_overlaps(s_.ctrl.MLWFDist);
+	   for ( int i = 0; i < sd.nst(); i++ )
+           {
+	    for ( int j = 0; j < sd.nst(); j++ )
             {
-              bool overlap = tdmlwft -> overlap(s_.ctrl.btHF,i,j);
-              cout << i << " " << j << " " << overlap << " <overlap/>" <<  endl;
+              bool overlap = tdmlwft -> overlap(s_.ctrl.MLWFDist,i,j);
+              cout << i << " " << j << " " << overlap << " <overlap/> " << tdmlwft->distance(i,j) << " distance " <<  endl;
             } 
-          }
+           }
         }
     }
 
@@ -1023,13 +1021,8 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
       // copy the orthogonal transformation u to uc_[ispin]
       *uc_[ispin] = bisection_[ispin]->u();
 
-      bisection_[ispin]->forward(*uc_[ispin], *wfc_.sd(ispin,0));
-      //bisection_[ispin]->forward(*uc_[ispin], *wfc_.sd(ispin,0)); //wfc_
+      bisection_[ispin]->forward(*uc_[ispin], *wfc_.sd(ispin,0)); //wfc_
     } // if use_bisection_
-
-    //SlaterDet& sd1 = *(wf.sd(ispin,0));
-    //test.gemm('c','n',1.0,sd.c(),sd1.c(),0.0);
-    //test.print(cout);
 
     tm.start();
     // compute exchange
@@ -1165,7 +1158,7 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
             //bool overlap_ij = ( !use_bisection_ ||
               //bisection_[ispin]->overlap(localization_,iGlobI,iGlobJ) );
             bool overlap_ij = ( !compute_mlwf  ||  
-	      tdmlwft -> overlap(s_.ctrl.btHF,iGlobI,iGlobJ) );
+	      tdmlwft -> overlap(s_.ctrl.MLWFDist,iGlobI,iGlobJ) );
 
             // use the chess board condition to
             // optimize the distribution of work on
@@ -1246,6 +1239,7 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
 
       if (dwf)
       {
+	//for (int i = 0; i < dsd.nstloc(); i++)
         for ( int i = 0; i < nStatesKpi_; i++ )
           for ( int j = 0; j < np012loc_; j++ )
             dstatei_[i][j] = 0.0;
@@ -1256,7 +1250,7 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
       SetNextPermutationStateNumber();
       // start sending states in send_buf_states_
       StartStatesPermutation(c.mloc());
-      // loop over pairs 2 by 2
+      // loop over pairs 1 by 1 
       if ( nPair > 0 )
       {
         double ex_sum_1, ex_sum_2;
