@@ -221,7 +221,7 @@ void TDMLWFTransform::update(void)
 void TDMLWFTransform::compute_transform(void)
 {
   const int maxsweep = 100;
-  const double tol = 1.e-5;
+  const double tol = 1.e-8;
   int nsweep = jade_complex(maxsweep,tol,a_,*u_,adiag_); 
   //int nsweep = jade_complex(maxsweep,tol,a_,*u_,*tmpmat_,adiag_); 
   // Joint approximate diagonalization step.
@@ -291,9 +291,18 @@ double TDMLWFTransform::distance(int i, int j)
   assert(j>=0 && j<sd_.nst());    
       //if (i !=j)
      // {
-  distance = center(i) - center(j);
-  double square = distance.x*distance.x + distance.y*distance.y + distance.z*distance.z;     
-  return sqrt(square);
+  D3vector ctr_i = center(i);
+  D3vector ctr_j = center(j);
+  //distance = center(i) - center(j);
+  //double square = distance.x*distance.x + distance.y*distance.y + distance.z*distance.z;     
+  //double square = ctr_i.x - ctr_j.x;
+  double x_dist = ctr_i.x - ctr_j.x;
+  double y_dist = ctr_i.y - ctr_j.y;
+  double z_dist = ctr_i.z - ctr_j.z; 
+  double total_dist = x_dist*x_dist + y_dist*y_dist + z_dist*z_dist;
+  double root = sqrt(total_dist);
+  return abs(root);
+  //return sqrt(square);
      // }
 }
 
@@ -301,7 +310,8 @@ double TDMLWFTransform::distance(int i, int j)
 bool TDMLWFTransform::overlap(double epsilon, int i, int j) 
 {
   // overlap: return true if the functions i and j overlap according to distance 
-  if ( distance(i,j) <= epsilon || distance(i,j) >= (sqrt(length(cell_.a(0))*length(cell_.a(0)) + length(cell_.a(1))*length(cell_.a(1)) + length(cell_.a(2))*length(cell_.a(2))) - epsilon))
+  if ( distance(i,j) <= epsilon || distance(i,j) >= (sqrt(length(cell_.a(0))*length(cell_.a(0)) + length(cell_.a(1))*length(cell_.a(1)) + length(cell_.a(2))*length(cell_.a(2))) - epsilon)) 
+ //(length(cell_.a(0)) - epsilon)) 
       return true;  //need sqrt(a0^2 + a1^2 + a2^2) for cell diagonal distance. Diagonal dist - epsilon for pbc  
 
   // return false if the states don't overlap

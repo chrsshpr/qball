@@ -302,6 +302,7 @@ void ExchangeOperator::apply_VXC_(double mix, Wavefunction& wf_ref,
 
         // matproj1 = <wf_ref|wf>
         matproj1.gemm('c','n',1.0,cref,c,0.0); 
+
         // dwf += mix * |dwf_ref> * matproj1
         dc.gemm('n','n',mix,dcref,matproj1,1.0);
         
@@ -565,7 +566,6 @@ double ExchangeOperator::compute_exchange_for_general_case_
               }
             }
           }
-
           // get occupation numbers for kpoint j
           const double* occ = sdj.occ_ptr();
           for ( int i = 0; i<sdj.nstloc(); i++ )
@@ -950,6 +950,12 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
   Timer tmb;
 
   wfc_ = wf;
+
+  // variables for tdmlwf pair selection 
+  const bool oncoutpe = s_.ctxt_.oncoutpe();
+  TDMLWFTransform* tdmlwft=0;
+  tddft_involved_ = s_.ctrl.tddft_involved;
+
   //wfc_.update_occ(s_.ctrl.smearing_width,s_.ctrl.smearing_ngauss);
   cout << setprecision(10);
 
@@ -966,9 +972,10 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
   const double *const g_y = vbasis_->gx_ptr(1);
   const double *const g_z = vbasis_->gx_ptr(2);
 
-  for ( int ispin = 0; ispin < wfc_.nspin(); ispin++ ) //wfc_
+  for ( int ispin = 0; ispin < wf.nspin(); ispin++ ) //wfc_
   {
-    SlaterDet& sd = *(wfc_.sd(ispin,0)); //wfc_
+    SlaterDet& sd = *(wf.sd(ispin,0)); //wfc_
+    SlaterDet& sd1 = *(wf.sd(ispin,0)); //wfc_
 
     // use copy to correctly read empty state occupations 
     //SlaterDet& sd_c = *(wfc_.sd(0,0));
@@ -976,17 +983,17 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
     ComplexMatrix& c = sd.c();
     const int nst = sd.nst();
 
-    //const Context &ctxt = s_.wf.sd(0,0)->c().context();
-    //int nb = c.nb();
-    //ComplexMatrix test(ctxt,nst,nst,nb,nb);
+
+    ComplexMatrix &wf1(s_.wf.sd(ispin,0)->c());
+    ComplexMatrix &wf2(s_.wf.sd(ispin,0)->c());
+    const Context &ctxt = s_.wf.sd(0,0)->c().context();
+    int nb = c.nb();
+    ComplexMatrix test(ctxt,nst,nst,nb,nb);
+    test.gemm('c','n',1.0,wf1,wf2,0.0);
     //test.gemm('c','n',1.0,sd.c(),sd1.c(),0.0);
     //test.print(cout);
 
-    const bool oncoutpe = s_.ctxt_.oncoutpe();
-    TDMLWFTransform* tdmlwft=0;
-    tddft_involved_ = s_.ctrl.tddft_involved;
-
-    if ( compute_mlwf )
+    if ( compute_mlwf && !tddft_involved_)
     { 
       assert(s_.wf.nspin()==1); //TDMLWF pair selection only works with spin unpolarized systems
       tdmlwft = new TDMLWFTransform(*wf.sd(0,0));
@@ -994,7 +1001,7 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
       tdmlwft->update();
       tdmlwft->compute_transform();
 
-      if ( !tddft_involved_ )  // for non-tddft, apply transfrom so wavefxn remains in wannier gauage 
+      //if ( !tddft_involved_ )  // for non-tddft, apply transfrom so wavefxn remains in wannier gauage 
         tdmlwft->apply_transform(sd);
         if ( oncoutpe ) {
           cout << "pair fraction: " << tdmlwft->pair_fraction(s_.ctrl.MLWFDist) << endl;
@@ -1004,12 +1011,19 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
 	    for ( int j = 0; j < sd.nst(); j++ )
             {
               bool overlap = tdmlwft -> overlap(s_.ctrl.MLWFDist,i,j);
-              cout << i << " " << j << " " << overlap << " <overlap/> " << tdmlwft->distance(i,j) << " distance " <<  endl;
+              //cout << i << " " << j << " " << overlap << " <overlap/> " << tdmlwft->distance(i,j) << " distance " <<  endl;
             } 
            }
         }
+     }
 
-      else  // transform is applied with TDMLWF diagonalization for TDDFT 
+    else if ( compute_mlwf )   // transform is applied with TDMLWF diagonalization for TDDFT 
+    {
+      assert(wfc_.nspin()==1); //TDMLWF pair selection only works with spin unpolarized systems
+      tdmlwft = new TDMLWFTransform(*wfc_.sd(0,0));
+      SlaterDet& sd = *(wfc_.sd(0,0));
+      tdmlwft->update();
+      tdmlwft->compute_transform();
         //tdmlwft->apply_transform(sd);
         if ( oncoutpe ) {
           cout << "pair fraction: " << tdmlwft->pair_fraction(s_.ctrl.MLWFDist) << endl;
@@ -1019,7 +1033,7 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
             for ( int j = 0; j < sd.nst(); j++ )
             {
               bool overlap = tdmlwft -> overlap(s_.ctrl.MLWFDist,i,j);
-              cout << i << " " << j << " " << overlap << " <overlap/> " << tdmlwft->distance(i,j) << " distance " <<  endl;
+              //cout << i << " " << j << " " << overlap << " <overlap/> " << tdmlwft->distance(i,j) << " distance " <<  endl;
             }
            }
         } 
@@ -1044,7 +1058,7 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
     // compute exchange
 
     // real-space local states -> statej_[i][ir]
-    // loop over states 2 by 2
+    // loop over states 1 by 1
     for ( int i = 0; i < sd.nstloc(); i+=1 )
     {
       wft_->backward(c.cvalptr(i*c.mloc()),&tmp_[0]);
@@ -1209,7 +1223,7 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
 
                 // circulating state i is used
                 useState[i] = 1;
-              }
+             }
             }
           }
         }
@@ -1255,11 +1269,11 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
 
       if (dwf)
       {
-	//for (int i = 0; i < dsd.nstloc(); i++)
         for ( int i = 0; i < nStatesKpi_; i++ )
           for ( int j = 0; j < np012loc_; j++ )
             dstatei_[i][j] = 0.0;
       }
+
       //cout<<"This is "<< gcontext_.myrow()<<"\t" << gcontext_.mycol()<<endl;
 
       // nNextStatesKpi: number of states of next permutation step
@@ -1454,7 +1468,7 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
       nStatesKpi_ = nNextStatesKpi_;
     } // iRotationStep
     // end of rotation of the states of kpoint i from this point
-#ifdef LOAD_MATRIX
+/*#ifdef LOAD_MATRIX
     // collect load_matrix
     gcontext_.isum('R', load_matrix.size(), 1, &load_matrix[0],
                    load_matrix.size());
@@ -1500,7 +1514,7 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
       cout << " pair fraction: " << ((double) rowcolsum)/(0.5*nst*(nst+1))
            << endl;
     }
-#endif
+#endif*/
     // wait for all communications to be completed
     // complete all permutations except forces
     CompleteReceivingStates(1);
@@ -1614,6 +1628,7 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
 
   tm.stop();
   return exchange_sum;
+  delete tdmlwft;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
