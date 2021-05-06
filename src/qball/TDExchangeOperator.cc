@@ -257,8 +257,8 @@ double ExchangeOperator::update_energy(bool compute_stress)
   if ( gamma_only_ )
     return eex_ = compute_exchange_at_gamma_(s_.wf, 0, compute_stress);
 
-  //else
-    //return eex_ = compute_exchange_for_general_case_(s_.wf, 0, compute_stress);
+  else
+    return eex_ = compute_exchange_for_general_case_(s_.wf, 0, compute_stress);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -268,8 +268,8 @@ double ExchangeOperator::update_operator(bool compute_stress)
   // compute exchange energy and derivatives
   if ( gamma_only_ )
     eex_ = compute_exchange_at_gamma_(s_.wf, &dwf0_, compute_stress);
-  //else
-    //eex_ = compute_exchange_for_general_case_(s_.wf, &dwf0_, compute_stress);
+  else
+    eex_ = compute_exchange_for_general_case_(s_.wf, &dwf0_, compute_stress);
 
   // wf0_ is kept as a reference state
   wf0_ = s_.wf;
@@ -347,7 +347,6 @@ void ExchangeOperator::cell_moved(void)
 ////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
-/*
 double ExchangeOperator::compute_exchange_for_general_case_
   (const Wavefunction& wf, Wavefunction* dwf, bool compute_stress)
 {
@@ -941,7 +940,7 @@ double ExchangeOperator::compute_exchange_for_general_case_
   tm.stop();
   return exchange_sum;
 }
-*/
+
 ////////////////////////////////////////////////////////////////////////////////
 double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
   Wavefunction* dwf, bool compute_stress)
