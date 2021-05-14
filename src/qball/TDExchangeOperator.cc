@@ -162,6 +162,7 @@ ExchangeOperator::ExchangeOperator( Sample& s, double alpha_sx,
     SlaterDet& sdi = *(s_.wf.sd(0,iKpi));
     ComplexMatrix& ci = sdi.c();
     if (mlocMax<ci.mloc()) mlocMax=ci.mloc();
+    //cout << mlocMax << " mlocMax " << endl;
   }
 
   // allocate memory for the copy of states of kpoint iKpi
@@ -393,7 +394,7 @@ double ExchangeOperator::compute_exchange_for_general_case_
       // occupation numbers for kpoint i
       const double* occ = sdi.occ_ptr();
       for ( int i = 0; i<nStatesKpi_; i++ )
-        occ_ki_[i] = occ[ci.jglobal(i)];
+        occ_ki_[i] = 2.0; //occ[ci.jglobal(i)]; //temporaraily set states to occ 2.0 CS
 
       // copy of the local states at kpoint iKpi
       const complex<double> *p = ci.cvalptr(0);
@@ -587,7 +588,7 @@ double ExchangeOperator::compute_exchange_for_general_case_
                 for ( int ir = 0; ir < np012loc_; ir++ )
                 {
                   rhor1_[ir] = conj( statej_[j][ir] ) * statei_[i][ir];
-                  rhor2_[ir] =       statej_[j][ir]   * statei_[i][ir];
+                  rhor2_[ir] =       statej_[j][ir]   * statei_[i][ir]; //needed? CS
                 }
 
                 // Fourier transform the pair density to obtain rho(G).
@@ -875,19 +876,18 @@ double ExchangeOperator::compute_exchange_for_general_case_
                              wf.weight(iKpi);
           if ( compute_stress )
           {
-            sigma_exhf_[0] += ( e_div_corr_1+ fac * sigma_num_corr[iKpi][0] ) /
-                              omega;
-            sigma_exhf_[1] += ( e_div_corr_1+ fac * sigma_num_corr[iKpi][1] ) /
-                              omega;
-            sigma_exhf_[2] += ( e_div_corr_1+ fac * sigma_num_corr[iKpi][2] ) /
-                              omega;
+            sigma_exhf_[0] += ( e_div_corr_1+ fac * sigma_num_corr[iKpi][0] ) / omega;
+            sigma_exhf_[1] += ( e_div_corr_1+ fac * sigma_num_corr[iKpi][1] ) / omega;
+            sigma_exhf_[2] += ( e_div_corr_1+ fac * sigma_num_corr[iKpi][2] ) / omega;
+
             sigma_exhf_[3] += ( fac * sigma_num_corr[iKpi][3] ) / omega;
             sigma_exhf_[4] += ( fac * sigma_num_corr[iKpi][4] ) / omega;
             sigma_exhf_[5] += ( fac * sigma_num_corr[iKpi][5] ) / omega;
           }
 
           // rcut*rcut divergence correction
-          if (  (gcontext_.mype() == 0)  )
+          //if (  (gcontext_.mype() == 0)  )
+	  if (vbasis_->context().myrow()==0)
           {
             const double div_corr_2 = - alpha_sx_ * exfac *
                rcut_ * rcut_ * occ_ki_[i] * wf.weight(iKpi);
@@ -974,7 +974,7 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
   for ( int ispin = 0; ispin < wf.nspin(); ispin++ ) //wfc_
   {
     SlaterDet& sd = *(wf.sd(ispin,0)); //wfc_
-    SlaterDet& sd1 = *(wf.sd(ispin,0)); //wfc_
+    //SlaterDet& sd1 = *(wf.sd(ispin,0)); //wfc_
 
     // use copy to correctly read empty state occupations 
     //SlaterDet& sd_c = *(wfc_.sd(0,0));
@@ -983,14 +983,14 @@ double ExchangeOperator::compute_exchange_at_gamma_(const Wavefunction &wf,
     const int nst = sd.nst();
 
 
-    ComplexMatrix &wf1(s_.wf.sd(ispin,0)->c());
+    /*ComplexMatrix &wf1(s_.wf.sd(ispin,0)->c());
     ComplexMatrix &wf2(s_.wf.sd(ispin,0)->c());
     const Context &ctxt = s_.wf.sd(0,0)->c().context();
     int nb = c.nb();
     ComplexMatrix test(ctxt,nst,nst,nb,nb);
     test.gemm('c','n',1.0,wf1,wf2,0.0);
-    //test.gemm('c','n',1.0,sd.c(),sd1.c(),0.0);
-    //test.print(cout);
+    test.gemm('c','n',1.0,sd.c(),sd1.c(),0.0);
+    test.print(cout);*/
 
     if ( compute_mlwf && !tddft_involved_)
     { 
