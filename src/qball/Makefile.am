@@ -49,6 +49,7 @@ noinst_HEADERS =                            \
 	ExtrapolatorASP.h                   \
 	ExtrapolatorNTC.h                   \
 	ExtrapolatorSimple.h                \
+	ExternalPotential.h 	    	    \
 	FCPStepper.h                        \
 	FORKTDWavefunctionStepper.h         \
 	FOTDWavefunctionStepper.h           \
@@ -115,6 +116,7 @@ noinst_HEADERS =                            \
 	XCPotential.h
 
 libqbLink_a_SOURCES =                        \
+	ExternalPotential.cc		     \
 	AtomSet.cc                           \
 	Atom.cc                              \
 	CoordinateConstraint.cc              \

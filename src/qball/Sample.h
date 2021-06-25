@@ -40,6 +40,7 @@
 #include <complex>
 
 class Context;
+class ExternalPotential;
 
 class Sample {
   private:
@@ -50,6 +51,7 @@ class Sample {
 
   AtomSet atoms;
   ConstraintSet constraints;
+  ExternalPotential* vext;
   Wavefunction wf;
   // AS: hamil_wf is a pointer which by default points to wf.
   // AS: in order to construct an Hamiltonian from different wave functions (charge densities)

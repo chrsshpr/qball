@@ -84,6 +84,7 @@ noinst_HEADERS =                            \
 	VectorPotentialDynamics.h           \
 	VectorPotentialVar.h                \
 	VdW.h                               \
+	Vext.h				    \
 	WfDiag.h                            \
 	WfDyn.h                             \
 	WfExtrap.h                          \

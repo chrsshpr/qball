@@ -190,6 +190,7 @@ using namespace std;
 #include <vars/BlHF.h>
 #include <vars/BtHF.h>
 #include <vars/MLWFDist.h>
+#include <vars/Vext.h> 
 
 #ifdef HAVE_BGQLIBS
 #include <spi/include/kernel/process.h>
@@ -267,7 +268,7 @@ int main(int argc, char **argv, char **envp)
     cout << "                   |                         |\n";
     cout << "                   |                         |\n";
     cout << "                   |                         |\n";
-    cout << "                   |                         |\n";
+    cout << "                   | Chris Latest            |\n";
     cout << "                   |                         |\n";
     cout << "                   |                         |\n";
     cout << "                   |                         |\n";
@@ -468,6 +469,7 @@ int main(int argc, char **argv, char **envp)
   ui->addVar(new VectorPotentialDynamics(s));
   ui->addVar(new VectorPotentialVar(s));
   ui->addVar(new VdW(s));
+  ui->addVar(new Vext(s));
   
 #ifdef USE_JAGGEMM
   setup_grid();
