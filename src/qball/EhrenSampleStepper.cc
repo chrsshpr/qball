@@ -1586,6 +1586,7 @@ if (s_.ctrl.saveholefreq > 0)
              for ( int i = 0; i < sd.nst(); i++ )
              {
                 D3vector ctr = tdmlwft->center(i);
+		cell.fold_in_ws(ctr);
                 double sp = tdmlwft->spread(i);
                 cout.setf(ios::fixed, ios::floatfield);
                 cout.setf(ios::right, ios::adjustfield);
@@ -1608,6 +1609,7 @@ if (s_.ctrl.saveholefreq > 0)
              }*/
 
              D3vector edipole = tdmlwft->dipole();
+             cell.fold_in_ws(edipole);
              cout << " <electronic_dipole> " << edipole
                   << " </electronic_dipole>" << endl;
              D3vector idipole = atoms.dipole();
